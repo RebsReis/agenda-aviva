@@ -1,0 +1,45 @@
+export type Profile = {
+  id: string;
+  full_name: string;
+  email: string;
+  role: "membro" | "admin";
+  consent_at: string | null;
+  consent_version: string | null;
+  created_at: string;
+};
+
+export type Ministry = {
+  id: string;
+  name: string;
+  color: string;
+  leader_id: string | null;
+  leader_name: string | null;
+};
+
+export type EventRow = {
+  id: string;
+  ministry_id: string;
+  title: string;
+  description: string | null;
+  location: string | null;
+  starts_at: string;
+  ends_at: string | null;
+  created_at: string;
+  updated_at: string;
+  ministries?: Pick<Ministry, "id" | "name" | "color"> | null;
+};
+
+export type Question = {
+  id: string;
+  event_id: string;
+  author_id: string;
+  author_name: string;
+  body: string;
+  answer: string | null;
+  answered_by_name: string | null;
+  answered_by_role: "lider" | "admin" | null;
+  answered_at: string | null;
+  created_at: string;
+};
+
+export const CONSENT_VERSION = "2026-11-26";

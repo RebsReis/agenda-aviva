@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+/* Identidade visual Aviva: laranja vibrante, creme, branco e tipografia condensada */
+@theme {
+  --color-aviva: #e4731d;
+  --color-aviva-escuro: #c45a0f;
+  --color-aviva-claro: #f59a52;
+  --color-creme: #f6ebdd;
+  --color-creme-escuro: #ecdcc8;
+  --color-tinta: #231a14;
+
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+  --font-script: "Caveat", cursive;
+}
+
+html,
+body {
+  background: var(--color-creme);
+  color: var(--color-tinta);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Textura de pontinhos (meio-tom) das artes do Instagram */
+.meio-tom {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.22) 1.2px, transparent 1.3px);
+  background-size: 9px 9px;
+}
+
+.titulo {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 0.95;
+}
+
+.campo {
+  @apply w-full rounded-xl border-2 border-creme-escuro bg-white px-4 py-3 text-base outline-none transition focus:border-aviva;
+}
+
+.botao {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-aviva px-5 py-3 font-bold text-white shadow-sm transition hover:bg-aviva-escuro active:scale-[0.98] disabled:opacity-60;
+}
+
+.botao-sec {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl border-2 border-aviva px-5 py-3 font-bold text-aviva transition hover:bg-aviva hover:text-white;
+}
+
+.selo {
+  @apply inline-block -rotate-2 rounded-md bg-white px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wide text-aviva shadow-sm;
+}
