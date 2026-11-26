@@ -28,7 +28,10 @@ export default function Giving({ giving }: { giving: GivingInfo | null }) {
           )}
         </dl>
         <div className="mt-4"><CopyButton text={giving.pix_key} /></div>
-        <p className="mt-3 text-xs opacity-60">Confira sempre se o favorecido é a igreja antes de confirmar o Pix.</p>
+        <p className="mt-3 text-xs opacity-60">
+          Dados atualizados em {new Date(giving.updated_at).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}.
+          Confira sempre se o favorecido é a igreja antes de confirmar o Pix. Se a chave mudar sem aviso da liderança, não faça o Pix e avise a igreja.
+        </p>
       </div>
     </div>
   );

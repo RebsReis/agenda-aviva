@@ -55,6 +55,7 @@ Aparece no topo da tela inicial, em **Todos** e no filtro **Mural da igreja** (q
    - `0004_secretaria.sql`: cria o papel de Secretaria(o) da igreja.
    - `0005_avisos_so_admin.sql`: avisos só pela admin; escalas pela secretaria e pela admin.
    - `0006_aniversariantes_dizimos.sql`: aniversariantes do mês e dízimos e ofertas (Pix).
+   - `0007_pix_2fa.sql`: alterar o Pix exige verificação em duas etapas.
 
 ### 2. Configurar o login
 Em **Authentication → Sign In / Providers**:
@@ -68,6 +69,8 @@ Em **Authentication → URL Configuration**:
 - **Redirect URLs:** adicione `https://agenda-aviva.vercel.app/**` e `http://localhost:3000/**`.
 
 Em **Authentication → Emails**: traduza os e-mails de confirmação e recuperação de senha para português.
+
+Em **Authentication → Multi-Factor**: confirme que **TOTP (App Authenticator)** está ativado. Ele é usado na verificação em duas etapas, obrigatória para alterar o Pix.
 
 Recomendado: em **Authentication → Attack Protection**, ative a proteção contra senhas vazadas e o CAPTCHA.
 
@@ -87,7 +90,11 @@ Recomendado: em **Authentication → Attack Protection**, ative a proteção con
    ```
 3. Entre no app → menu → **Painel do admin** → escolha o líder de cada ministério (e adicione outros, se precisar).
 
-### 5. Antes de divulgar
+### 5. Proteger o Pix
+1. No app, abra o menu → **Segurança** → **Ativar verificação em duas etapas** e escaneie o QR code com o Google Authenticator (ou similar).
+2. Vá em **Mural da igreja → Dízimos e ofertas → Alterar dados do Pix**, digite o código do aplicativo e preencha a chave Pix (digitada duas vezes) e o e-mail da igreja.
+
+### 6. Antes de divulgar
 - Em `app/privacidade/page.tsx`, preencha o **CNPJ** e o **e-mail de contato** (procure por `PREENCHER`).
 - Ative a verificação em duas etapas na sua conta do Supabase, da Vercel e do GitHub.
 - Quando o app estiver em uso, considere o **plano Pro do Supabase** (backups diários e o projeto não pausa por inatividade).

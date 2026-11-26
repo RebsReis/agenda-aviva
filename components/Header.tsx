@@ -29,6 +29,7 @@ export default function Header({ session }: { session: Session }) {
             {session.canEdit && <Link className="block px-4 py-3 hover:bg-creme" href="/eventos/novo">Novo evento</Link>}
             {session.isAdmin && <Link className="block px-4 py-3 hover:bg-creme" href="/admin">Painel do admin</Link>}
             <Link className="block px-4 py-3 hover:bg-creme" href="/meus-dados">Meus dados</Link>
+            <Link className="block px-4 py-3 hover:bg-creme" href="/seguranca">Segurança</Link>
             <Link className="block px-4 py-3 hover:bg-creme" href="/privacidade">Privacidade</Link>
             <form action={signOut}>
               <button className="block w-full px-4 py-3 text-left font-semibold text-aviva hover:bg-creme">Sair</button>

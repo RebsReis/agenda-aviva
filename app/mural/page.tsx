@@ -5,6 +5,8 @@ import { MESES, addMonths, dayLabel, parseDay, todayISO } from "@/lib/dates";
 import { groupDuties, loadMural } from "@/lib/mural";
 import Birthdays from "@/components/Birthdays";
 import Giving from "@/components/Giving";
+import PixForm from "@/components/PixForm";
+import TwoFactorVerify from "@/components/TwoFactorVerify";
 import {
   createAnnouncement, createBirthday, createDuty, deleteAnnouncement, deleteBirthday, deleteDuty, togglePin,
   updateAnnouncement, updateBirthday, updateDuty, updateGiving,
@@ -12,9 +14,9 @@ import {
 
 const SUGESTOES = ["Limpeza", "Recepção", "Santa Ceia", "Cantina", "Estacionamento"];
 
-export default async function MuralPage({ searchParams }: { searchParams: Promise<{ m?: string }> }) {
+export default async function MuralPage({ searchParams }: { searchParams: Promise<{ m?: string; pix?: string }> }) {
   const session = await requireSession();
-  const { m } = await searchParams;
+  const { m, pix } = await searchParams;
   const month = m && /^\d{4}-\d{2}$/.test(m) ? `${m}-01` : todayISO();
   const { today, start, announcements, duties, birthdays, giving } = await loadMural(month);
   const podeAvisos = session.canManageAvisos;
@@ -209,8 +211,11 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
         </section>
 
         {/* DÍZIMOS E OFERTAS */}
-        <section>
+        <section id="dizimos" className="scroll-mt-20">
           <h2 className="titulo text-3xl text-aviva">Dízimos e ofertas</h2>
+          {pix === "ok" && <p className="mt-2 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-800">Dados do Pix atualizados.</p>}
+          {pix === "confere" && <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">As duas chaves digitadas não conferem. Nada foi alterado.</p>}
+          {pix === "2fa" && <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">Alteração recusada: confirme com o código do autenticador e tente de novo.</p>}
           <div className="mt-3">
             {giving?.pix_key ? <Giving giving={giving} /> : (
               <p className="rounded-2xl bg-white p-5 text-sm text-tinta/50 shadow-sm">Os dados para contribuição serão publicados em breve.</p>
@@ -219,20 +224,19 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
           {podeAvisos && giving && (
             <details className="mt-4 rounded-2xl border-2 border-dashed border-aviva/40 p-4">
               <summary className="cursor-pointer font-bold">Alterar dados do Pix</summary>
-              <form action={updateGiving.bind(null, giving.id)} className="mt-3 space-y-3">
-                <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-                  <input name="pix_key" defaultValue={giving.pix_key ?? ""} className="campo" placeholder="Chave Pix" maxLength={120} />
-                  <select name="pix_key_type" defaultValue={giving.pix_key_type ?? "CNPJ"} className="campo">
-                    {["CNPJ", "E-mail", "Telefone", "Aleatória"].map((t) => <option key={t}>{t}</option>)}
-                  </select>
+              {!session.hasTwoFactor ? (
+                <div className="mt-3 space-y-3 text-sm">
+                  <p>Para proteger as ofertas, alterar o Pix exige a <b>verificação em duas etapas</b>.</p>
+                  <Link href="/seguranca" className="botao w-full">Ativar verificação em duas etapas</Link>
                 </div>
-                <input name="beneficiary" defaultValue={giving.beneficiary ?? ""} className="campo" placeholder="Favorecido (ex.: Comunidade Cristã Aviva)" maxLength={120} />
-                <input name="bank" defaultValue={giving.bank ?? ""} className="campo" placeholder="Banco (opcional)" maxLength={80} />
-                <input name="email" type="email" defaultValue={giving.email ?? ""} className="campo" placeholder="E-mail da igreja" maxLength={120} />
-                <textarea name="message" defaultValue={giving.message ?? ""} className="campo min-h-20" placeholder="Mensagem (opcional)" maxLength={500} />
-                <p className="text-xs text-tinta/60">Só a admin pode alterar estes dados. Toda alteração fica registrada no histórico.</p>
-                <button className="botao w-full">Salvar dados do Pix</button>
-              </form>
+              ) : !session.twoFactor ? (
+                <div className="mt-3 space-y-2 text-sm">
+                  <p>Digite o código do aplicativo autenticador para liberar a alteração.</p>
+                  <TwoFactorVerify next="/mural#dizimos" compact />
+                </div>
+              ) : (
+                <PixForm giving={giving} action={updateGiving.bind(null, giving.id)} />
+              )}
             </details>
           )}
         </section>

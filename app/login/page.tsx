@@ -31,7 +31,9 @@ function LoginForm() {
       );
       return;
     }
-    router.replace("/");
+    // Se a conta tem verificação em duas etapas, pede o código
+    const { data: aal } = await createClient().auth.mfa.getAuthenticatorAssuranceLevel();
+    router.replace(aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2" ? "/verificar-2fa" : "/");
     router.refresh();
   }
 

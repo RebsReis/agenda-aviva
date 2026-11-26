@@ -74,4 +74,5 @@ export type GivingInfo = {
   bank: string | null;
   email: string | null;
   message: string | null;
+  updated_at: string;
 };

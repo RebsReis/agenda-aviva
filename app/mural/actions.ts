@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 // Avisos: só a admin. Escalas: admin ou secretaria. (Regras RLS no banco.)
@@ -134,10 +135,16 @@ export async function updateGiving(id: string, formData: FormData) {
   const type = String(formData.get("pix_key_type") ?? "");
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  await supabase
+
+  // Chave nova precisa ser digitada duas vezes iguais
+  const { data: current } = await supabase.from("giving_info").select("pix_key").eq("id", id).single();
+  const newKey = text("pix_key", 120);
+  if (newKey !== (current?.pix_key ?? null) && newKey !== text("pix_key_confirm", 120)) redirect("/mural?pix=confere#dizimos");
+
+  const { data, error } = await supabase
     .from("giving_info")
     .update({
-      pix_key: text("pix_key", 120),
+      pix_key: newKey,
       pix_key_type: PIX_TYPES.includes(type) ? type : null,
       beneficiary: text("beneficiary", 120),
       bank: text("bank", 80),
@@ -145,6 +152,10 @@ export async function updateGiving(id: string, formData: FormData) {
       message: text("message", 500),
       updated_by: user?.id,
     })
-    .eq("id", id);
+    .eq("id", id)
+    .select("id");
+  // O banco recusa se a sessão não tiver as duas etapas
+  if (error || !data?.length) redirect("/mural?pix=2fa#dizimos");
   refresh();
+  redirect("/mural?pix=ok#dizimos");
 }
