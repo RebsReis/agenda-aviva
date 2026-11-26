@@ -29,7 +29,7 @@ Aparece no topo da tela inicial, em **Todos** e no filtro **Mural da igreja** (q
 |---|---|
 | Avisos | Admin e líderes da **Mídia** (adicionam, editam e apagam) |
 | Escalas da igreja (limpeza, recepção...) | Secretaria(o) e admin |
-| Escalas da Mídia (Som, Luzes, Fotos e Vídeos, Datashow), no filtro **Mídia** da agenda (não aparecem no Mural) | Líderes da Mídia e admin |
+| Escalas da Mídia (Som, Luzes, Fotos e Vídeos, Datashow, Avisos), no filtro **Mídia** da agenda (não aparecem no Mural) | Líderes da Mídia e admin |
 | Aniversariantes | Secretaria(o) e admin |
 | Dízimos e ofertas (Pix) | **Só a admin**, para evitar fraude; toda alteração fica no histórico |
 

@@ -84,7 +84,7 @@ export type GivingInfo = {
 
 /** Tipos de escala de cada ministério (os ministérios listados aqui ganham uma área de escalas no Mural) */
 export const ESCALAS_MINISTERIO: Record<string, string[]> = {
-  "Mídia": ["Som", "Luzes", "Fotos e Vídeos", "Datashow"],
+  "Mídia": ["Som", "Luzes", "Fotos e Vídeos", "Datashow", "Avisos"],
 };
 
 /** Tipos sugeridos para as escalas gerais da igreja (secretaria) */

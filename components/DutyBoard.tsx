@@ -6,7 +6,7 @@ import type { Duty } from "@/lib/types";
 /** "Escala do som", "Escala das luzes", "Escala de limpeza"... */
 function tituloEscala(category: string) {
   const c = category.toLowerCase();
-  const artigo: Record<string, string> = { som: "do", datashow: "do", luzes: "das" };
+  const artigo: Record<string, string> = { som: "do", datashow: "do", luzes: "das", avisos: "dos" };
   return `Escala ${artigo[c] ?? "de"} ${c}`;
 }
 
