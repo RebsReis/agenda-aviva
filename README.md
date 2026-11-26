@@ -38,7 +38,7 @@ As regras ficam **no próprio banco de dados** (Row Level Security). Mesmo que a
    - **Region:** `South America (São Paulo)`.
    - Guarde a senha do banco num lugar seguro.
 2. Vá em **SQL Editor**, cole todo o conteúdo de `supabase/migrations/0001_inicial.sql` e clique em **Run**.
-3. Depois, faça o mesmo com `supabase/migrations/0002_ministerios.sql`. Ele cadastra os ministérios: Jovens, Adolescentes, Mulheres, Homens, Louvor, Infantil, Mídia e Geral (para os cultos).
+3. Depois, faça o mesmo com `supabase/migrations/0002_ministerios.sql`. Ele cadastra os ministérios: Jovens, Adolescentes, Mulheres, Homens, Louvor, Infantil, Mídia e **Mural da igreja** (cultos e eventos da igreja toda).
 
 ### 2. Configurar o login
 Em **Authentication → Sign In / Providers**:

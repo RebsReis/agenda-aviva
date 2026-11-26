@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   DIAS_CURTOS, MESES, OFFSET, addDays, addMonths, dayLabel, dayOf, isValidDay, parseDay, rangeFor, todayISO, type View,
 } from "@/lib/dates";
-import type { EventRow, Ministry } from "@/lib/types";
+import { MURAL_MINISTRY, type EventRow, type Ministry } from "@/lib/types";
 
 type Search = { v?: string; d?: string; m?: string };
 
@@ -35,10 +35,12 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
     loadMural(),
   ]);
   const events = (eventsData ?? []) as EventRow[];
-  // "Geral" (cultos e eventos da igreja toda) aparece logo depois de "Todos"
+  // "Mural da igreja" (cultos e eventos da igreja toda) aparece logo depois de "Todos"
   const ministries = ((ministriesData ?? []) as Pick<Ministry, "id" | "name" | "color">[]).sort(
-    (x, y) => Number(y.name === "Geral") - Number(x.name === "Geral"),
+    (x, y) => Number(y.name === MURAL_MINISTRY) - Number(x.name === MURAL_MINISTRY),
   );
+  // O mural (avisos e escalas) aparece em "Todos" e no filtro "Mural da igreja"
+  const showMural = !ministryFilter || ministries.find((m) => m.id === ministryFilter)?.name === MURAL_MINISTRY;
 
   const byDay = new Map<string, EventRow[]>();
   for (const e of events) {
@@ -100,7 +102,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
       </section>
 
       <main className="mx-auto max-w-3xl px-4 py-6">
-        <Mural {...mural} />
+        {showMural && <Mural {...mural} />}
         {view === "mes" && <MonthGrid day={day} byDay={byDay} today={today} link={link} />}
 
         {view === "ano" ? (

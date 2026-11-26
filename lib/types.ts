@@ -60,3 +60,6 @@ export type Duty = {
   assignees: string;
   notes: string | null;
 };
+
+/** Ministério dos cultos e eventos da igreja toda; o filtro dele também mostra o Mural */
+export const MURAL_MINISTRY = "Mural da igreja";
