@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import EventCard from "@/components/EventCard";
 import Mural from "@/components/Mural";
 import DutyBoard from "@/components/DutyBoard";
+import ChipRow from "@/components/ChipRow";
 import { loadMural } from "@/lib/mural";
 import { requireSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -108,14 +109,25 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
             ))}
           </div>
 
-          <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 text-xs font-bold">
-            <Link href={link({ m: "" }).replace(/&m=[^&]*/, "")} className={`shrink-0 rounded-full px-3 py-1.5 ${!ministryFilter ? "bg-tinta text-white" : "bg-white/20"}`}>Todos</Link>
+          <ChipRow activeKey={ministryFilter || "todos"}>
+            <Link
+              href={link({ m: "" })}
+              aria-current={!ministryFilter}
+              className={`shrink-0 rounded-full px-3 py-1.5 ${!ministryFilter ? "bg-tinta text-white" : "bg-white/20"}`}
+            >
+              Todos
+            </Link>
             {ministries.map((m) => (
-              <Link key={m.id} href={link({ m: m.id })} className={`shrink-0 rounded-full px-3 py-1.5 ${ministryFilter === m.id ? "bg-tinta text-white" : "bg-white/20"}`}>
+              <Link
+                key={m.id}
+                href={link({ m: m.id })}
+                aria-current={ministryFilter === m.id}
+                className={`shrink-0 rounded-full px-3 py-1.5 ${ministryFilter === m.id ? "bg-tinta text-white" : "bg-white/20"}`}
+              >
                 {m.name}
               </Link>
             ))}
-          </div>
+          </ChipRow>
         </div>
       </section>
 
