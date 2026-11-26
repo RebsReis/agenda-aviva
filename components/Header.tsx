@@ -23,6 +23,7 @@ export default function Header({ session }: { session: Session }) {
               {session.isAdmin ? "Administradora geral" : session.ledMinistries.length ? "Líder de ministério" : "Membro"}
             </div>
             <Link className="block px-4 py-3 hover:bg-creme" href="/">Agenda</Link>
+            <Link className="block px-4 py-3 hover:bg-creme" href="/mural">Mural da igreja</Link>
             {session.canEdit && <Link className="block px-4 py-3 hover:bg-creme" href="/eventos/novo">Novo evento</Link>}
             {session.isAdmin && <Link className="block px-4 py-3 hover:bg-creme" href="/admin">Painel do admin</Link>}
             <Link className="block px-4 py-3 hover:bg-creme" href="/meus-dados">Meus dados</Link>

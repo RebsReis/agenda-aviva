@@ -43,3 +43,20 @@ export type Question = {
 };
 
 export const CONSENT_VERSION = "2026-11-26";
+
+export type Announcement = {
+  id: string;
+  title: string;
+  body: string | null;
+  pinned: boolean;
+  expires_on: string | null;
+  created_at: string;
+};
+
+export type Duty = {
+  id: string;
+  category: string;
+  duty_date: string;
+  assignees: string;
+  notes: string | null;
+};

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Header from "@/components/Header";
 import EventCard from "@/components/EventCard";
+import Mural from "@/components/Mural";
+import { loadMural } from "@/lib/mural";
 import { requireSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -27,9 +29,10 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
     .lt("starts_at", `${end}T00:00:00${OFFSET}`)
     .order("starts_at");
   if (ministryFilter) query = query.eq("ministry_id", ministryFilter);
-  const [{ data: eventsData }, { data: ministriesData }] = await Promise.all([
+  const [{ data: eventsData }, { data: ministriesData }, mural] = await Promise.all([
     query,
     supabase.from("ministries").select("id, name, color").order("name"),
+    loadMural(),
   ]);
   const events = (eventsData ?? []) as EventRow[];
   const ministries = (ministriesData ?? []) as Pick<Ministry, "id" | "name" | "color">[];
@@ -94,6 +97,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
       </section>
 
       <main className="mx-auto max-w-3xl px-4 py-6">
+        <Mural {...mural} />
         {view === "mes" && <MonthGrid day={day} byDay={byDay} today={today} link={link} />}
 
         {view === "ano" ? (

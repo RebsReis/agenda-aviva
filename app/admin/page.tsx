@@ -6,7 +6,7 @@ import { createMinistry, deleteMinistry, updateMinistry } from "./actions";
 import type { Ministry, Profile } from "@/lib/types";
 
 const ACOES: Record<string, string> = { INSERT: "criou", UPDATE: "editou", DELETE: "apagou" };
-const ENTIDADES: Record<string, string> = { events: "evento", ministries: "ministério", questions: "pergunta" };
+const ENTIDADES: Record<string, string> = { events: "evento", ministries: "ministério", questions: "pergunta", announcements: "aviso", duties: "escala" };
 
 export default async function AdminPage() {
   const session = await requireSession();
