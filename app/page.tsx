@@ -35,7 +35,10 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
     loadMural(),
   ]);
   const events = (eventsData ?? []) as EventRow[];
-  const ministries = (ministriesData ?? []) as Pick<Ministry, "id" | "name" | "color">[];
+  // "Geral" (cultos e eventos da igreja toda) aparece logo depois de "Todos"
+  const ministries = ((ministriesData ?? []) as Pick<Ministry, "id" | "name" | "color">[]).sort(
+    (x, y) => Number(y.name === "Geral") - Number(x.name === "Geral"),
+  );
 
   const byDay = new Map<string, EventRow[]>();
   for (const e of events) {
