@@ -12,9 +12,10 @@ export type Ministry = {
   id: string;
   name: string;
   color: string;
-  leader_id: string | null;
-  leader_name: string | null;
+  ministry_leaders?: MinistryLeader[];
 };
+
+export type MinistryLeader = { user_id: string; leader_name: string | null };
 
 export type EventRow = {
   id: string;
@@ -24,6 +25,8 @@ export type EventRow = {
   location: string | null;
   starts_at: string;
   ends_at: string | null;
+  created_by: string | null;
+  responsible_name: string | null;
   created_at: string;
   updated_at: string;
   ministries?: Pick<Ministry, "id" | "name" | "color"> | null;

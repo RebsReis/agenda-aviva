@@ -31,14 +31,16 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
   if (ministryFilter) query = query.eq("ministry_id", ministryFilter);
   const [{ data: eventsData }, { data: ministriesData }, mural] = await Promise.all([
     query,
-    supabase.from("ministries").select("id, name, color").order("name"),
+    supabase.from("ministries").select("id, name, color, ministry_leaders(user_id)").order("name"),
     loadMural(),
   ]);
   const events = (eventsData ?? []) as EventRow[];
   // "Mural da igreja" (cultos e eventos da igreja toda) aparece logo depois de "Todos"
-  const ministries = ((ministriesData ?? []) as Pick<Ministry, "id" | "name" | "color">[]).sort(
+  const ministries = ((ministriesData ?? []) as Pick<Ministry, "id" | "name" | "color" | "ministry_leaders">[]).sort(
     (x, y) => Number(y.name === MURAL_MINISTRY) - Number(x.name === MURAL_MINISTRY),
   );
+  // Ministérios com várias líderes: o cartão do evento mostra a responsável
+  const multi = new Set(ministries.filter((m) => (m.ministry_leaders?.length ?? 0) > 1).map((m) => m.id));
   // O mural (avisos e escalas) aparece em "Todos" e no filtro "Mural da igreja"
   const showMural = !ministryFilter || ministries.find((m) => m.id === ministryFilter)?.name === MURAL_MINISTRY;
 
@@ -108,7 +110,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
         {view === "ano" ? (
           <YearView year={d0.getUTCFullYear()} events={events} link={link} />
         ) : (
-          <DayList start={start} end={end} byDay={byDay} today={today} showEmpty={view === "semana"} />
+          <DayList start={start} end={end} byDay={byDay} today={today} showEmpty={view === "semana"} multi={multi} />
         )}
 
         {session.canEdit && (
@@ -155,7 +157,7 @@ function MonthGrid({ day, byDay, today, link }: { day: string; byDay: Map<string
   );
 }
 
-function DayList({ start, end, byDay, today, showEmpty }: { start: string; end: string; byDay: Map<string, EventRow[]>; today: string; showEmpty: boolean }) {
+function DayList({ start, end, byDay, today, showEmpty, multi }: { start: string; end: string; byDay: Map<string, EventRow[]>; today: string; showEmpty: boolean; multi: Set<string> }) {
   const days: string[] = [];
   for (let d = start; d < end; d = addDays(d, 1)) days.push(d);
   const visible = days.filter((d) => showEmpty || byDay.has(d));
@@ -168,7 +170,7 @@ function DayList({ start, end, byDay, today, showEmpty }: { start: string; end: 
             {d === today ? "Hoje · " : ""}{dayLabel(d)}
           </h2>
           <div className="space-y-2">
-            {(byDay.get(d) ?? []).map((e) => <EventCard key={e.id} event={e} />)}
+            {(byDay.get(d) ?? []).map((e) => <EventCard key={e.id} event={e} showResponsible={multi.has(e.ministry_id)} />)}
             {!byDay.has(d) && <p className="rounded-xl border-2 border-dashed border-creme-escuro px-4 py-3 text-sm text-tinta/40">Nada programado</p>}
           </div>
         </div>

@@ -11,11 +11,13 @@ App web (PWA) da agenda da **Comunidade Cristã Aviva**: cronograma semanal, men
 | Papel | Vê a agenda | Pergunta | Cria/edita eventos | Responde perguntas | Ministérios e líderes |
 |---|---|---|---|---|---|
 | **Membro** | ✅ | ✅ | — | — | — |
-| **Líder** | ✅ | ✅ | Só do próprio ministério | Só nos eventos do próprio ministério | — |
+| **Líder** | ✅ | ✅ | Do próprio ministério (*) | Nos eventos que pode editar | — |
 | **Secretaria(o)** (uma pessoa) | ✅ | ✅ | — | — | — |
 | **Admin geral** (uma pessoa) | ✅ | ✅ | Todos | Todos | ✅ |
 
 **Mural da igreja:** os **avisos** são publicados e editados só pela **admin**. As **escalas** são adicionadas e alteradas pela **secretaria(o)** (e também pela admin). A admin nomeia a secretaria(o) no Painel do admin.
+
+(*) Ministério com **uma** líder: ela edita todos os eventos do ministério. Ministério com **várias** líderes (ex.: Mulheres): cada uma edita só os eventos que ela criou, e o evento mostra a responsável.
 
 As regras ficam **no próprio banco de dados** (Row Level Security). Mesmo que alguém tente burlar o app, o banco recusa.
 
@@ -56,6 +58,7 @@ Aparece no topo da tela inicial, em **Todos** e no filtro **Mural da igreja** (q
    - `0005_avisos_so_admin.sql`: avisos só pela admin; escalas pela secretaria e pela admin.
    - `0006_aniversariantes_dizimos.sql`: aniversariantes do mês e dízimos e ofertas (Pix).
    - `0007_pix_2fa.sql`: alterar o Pix exige verificação em duas etapas.
+   - `0008_varias_lideres.sql`: permite mais de uma líder por ministério (ex.: Mulheres).
 
 ### 2. Configurar o login
 Em **Authentication → Sign In / Providers**:
@@ -88,7 +91,7 @@ Recomendado: em **Authentication → Attack Protection**, ative a proteção con
    ```sql
    update public.profiles set role = 'admin' where email = 'SEU-EMAIL@exemplo.com';
    ```
-3. Entre no app → menu → **Painel do admin** → escolha o líder de cada ministério (e adicione outros, se precisar).
+3. Entre no app → menu → **Painel do admin** → escolha a líder de cada ministério. No Mulheres, adicione todas as líderes.
 
 ### 5. Proteger o Pix
 1. No app, abra o menu → **Segurança** → **Ativar verificação em duas etapas** e escaneie o QR code com o Google Authenticator (ou similar).

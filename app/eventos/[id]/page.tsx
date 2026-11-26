@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
-import { requireSession } from "@/lib/auth";
+import { canManageEvent, requireSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { longDate, timeOf } from "@/lib/dates";
 import { answerQuestion, askQuestion, deleteQuestion } from "@/app/eventos/actions";
-import type { EventRow, Question } from "@/lib/types";
+import type { EventRow, MinistryLeader, Question } from "@/lib/types";
 
 export default async function EventoPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await requireSession();
@@ -13,14 +13,17 @@ export default async function EventoPage({ params }: { params: Promise<{ id: str
   const supabase = await createClient();
 
   const [{ data: ev }, { data: qs }] = await Promise.all([
-    supabase.from("events").select("*, ministries(id, name, color, leader_name)").eq("id", id).maybeSingle(),
+    supabase.from("events").select("*, ministries(id, name, color, ministry_leaders(user_id, leader_name))").eq("id", id).maybeSingle(),
     supabase.from("questions").select("*").eq("event_id", id).order("created_at"),
   ]);
   if (!ev) notFound();
-  const event = ev as EventRow & { ministries: { id: string; name: string; color: string; leader_name: string | null } };
+  const event = ev as EventRow & { ministries: { id: string; name: string; color: string; ministry_leaders: MinistryLeader[] } };
   const questions = (qs ?? []) as Question[];
   const color = event.ministries?.color ?? "#E4731D";
-  const canManage = session.isAdmin || session.ledMinistries.some((m) => m.id === event.ministry_id);
+  const leaders = event.ministries?.ministry_leaders ?? [];
+  const canManage = canManageEvent(session, event, leaders.length);
+  // Ministério com várias líderes: mostra a responsável pelo evento
+  const responsavel = leaders.length > 1 ? event.responsible_name : leaders[0]?.leader_name;
 
   return (
     <>
@@ -35,7 +38,7 @@ export default async function EventoPage({ params }: { params: Promise<{ id: str
             {timeOf(event.starts_at)}{event.ends_at ? ` às ${timeOf(event.ends_at)}` : ""}
             {event.location ? ` · ${event.location}` : ""}
           </p>
-          {event.ministries?.leader_name && <p className="mt-1 text-sm opacity-90">Líder: {event.ministries.leader_name}</p>}
+          {responsavel && <p className="mt-1 text-sm opacity-90">{leaders.length > 1 ? "Responsável" : "Líder"}: {responsavel}</p>}
         </div>
       </section>
 

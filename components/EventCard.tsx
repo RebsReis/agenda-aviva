@@ -2,7 +2,7 @@ import Link from "next/link";
 import { timeOf } from "@/lib/dates";
 import type { EventRow } from "@/lib/types";
 
-export default function EventCard({ event }: { event: EventRow }) {
+export default function EventCard({ event, showResponsible = false }: { event: EventRow; showResponsible?: boolean }) {
   const color = event.ministries?.color ?? "#E4731D";
   return (
     <Link
@@ -17,6 +17,7 @@ export default function EventCard({ event }: { event: EventRow }) {
         <span className="text-[11px] font-extrabold uppercase tracking-wide" style={{ color }}>{event.ministries?.name}</span>
         <h3 className="truncate text-base font-bold">{event.title}</h3>
         {event.location && <p className="truncate text-sm text-tinta/60">📍 {event.location}</p>}
+        {showResponsible && event.responsible_name && <p className="truncate text-xs text-tinta/50">Responsável: {event.responsible_name}</p>}
       </div>
     </Link>
   );

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import Header from "@/components/Header";
 import EventForm from "@/components/EventForm";
-import { requireSession } from "@/lib/auth";
+import { canManageEvent, requireSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { deleteEvent, updateEvent } from "@/app/eventos/actions";
 import type { EventRow, Ministry } from "@/lib/types";
@@ -18,12 +18,12 @@ export default async function EditarEventoPage({
   const { id } = await params;
   const { erro } = await searchParams;
   const supabase = await createClient();
-  const { data } = await supabase.from("events").select("*").eq("id", id).maybeSingle();
+  const { data } = await supabase.from("events").select("*, ministries(ministry_leaders(user_id))").eq("id", id).maybeSingle();
   if (!data) notFound();
   const event = data as EventRow;
 
-  const isLeader = session.ledMinistries.some((m) => m.id === event.ministry_id);
-  if (!session.isAdmin && !isLeader) redirect(`/eventos/${id}`);
+  const leaderCount = (data as { ministries?: { ministry_leaders?: unknown[] } }).ministries?.ministry_leaders?.length ?? 0;
+  if (!canManageEvent(session, event, leaderCount)) redirect(`/eventos/${id}`);
 
   let ministries: Ministry[] = session.ledMinistries;
   if (session.isAdmin) {

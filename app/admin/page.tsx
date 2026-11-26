@@ -2,11 +2,11 @@ import { redirect } from "next/navigation";
 import Header from "@/components/Header";
 import { requireSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { createMinistry, deleteMinistry, setSecretary, updateMinistry } from "./actions";
+import { addLeader, createMinistry, deleteMinistry, removeLeader, setSecretary, updateMinistry } from "./actions";
 import type { Ministry, Profile } from "@/lib/types";
 
 const ACOES: Record<string, string> = { INSERT: "criou", UPDATE: "editou", DELETE: "apagou" };
-const ENTIDADES: Record<string, string> = { events: "evento", ministries: "ministério", questions: "pergunta", announcements: "aviso", duties: "escala", secretaria: "secretaria(o)", birthdays: "aniversariante", giving_info: "dados do Pix" };
+const ENTIDADES: Record<string, string> = { events: "evento", ministries: "ministério", questions: "pergunta", announcements: "aviso", duties: "escala", secretaria: "secretaria(o)", ministry_leaders: "líder", birthdays: "aniversariante", giving_info: "dados do Pix" };
 
 export default async function AdminPage() {
   const session = await requireSession();
@@ -14,7 +14,7 @@ export default async function AdminPage() {
   const supabase = await createClient();
 
   const [{ data: mins }, { data: people }, { data: logs }] = await Promise.all([
-    supabase.from("ministries").select("*").order("name"),
+    supabase.from("ministries").select("*, ministry_leaders(user_id, leader_name)").order("name"),
     supabase.from("profiles").select("id, full_name, email, role, created_at").order("full_name"),
     supabase.from("audit_log").select("*").order("created_at", { ascending: false }).limit(30),
   ]);
@@ -23,12 +23,13 @@ export default async function AdminPage() {
   const nameOf = new Map(profiles.map((p) => [p.id, p.full_name]));
   const secretary = profiles.find((p) => p.role === "secretaria");
 
-  const LeaderSelect = ({ value }: { value?: string | null }) => (
-    <select name="leader_id" defaultValue={value ?? ""} className="campo py-2">
-      <option value="">Sem líder</option>
-      {profiles.map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
+  const LeaderSelect = ({ name = "leader_id", exclude = [], empty = "Sem líder" }: { name?: string; exclude?: string[]; empty?: string }) => (
+    <select name={name} defaultValue="" className="campo py-2">
+      <option value="">{empty}</option>
+      {profiles.filter((p) => !exclude.includes(p.id)).map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
     </select>
   );
+  const isLeader = (id: string) => ministries.some((m) => m.ministry_leaders?.some((l) => l.user_id === id));
 
   return (
     <>
@@ -41,22 +42,44 @@ export default async function AdminPage() {
 
         <section>
           <h2 className="titulo text-2xl">Ministérios e líderes</h2>
-          <p className="text-sm text-tinta/60">Cada ministério tem um líder, que só edita os eventos do próprio ministério.</p>
+          <p className="text-sm text-tinta/60">Com uma líder só, ela cuida de todos os eventos do ministério. Com várias líderes (ex.: Mulheres), cada uma edita só os eventos que ela mesma criou.</p>
 
           <div className="mt-3 space-y-3">
-            {ministries.map((m) => (
-              <div key={m.id} className="rounded-2xl bg-white p-4 shadow-sm">
-                <form action={updateMinistry.bind(null, m.id)} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto_auto]">
-                  <input name="name" defaultValue={m.name} className="campo py-2" required />
-                  <LeaderSelect value={m.leader_id} />
-                  <input name="color" type="color" defaultValue={m.color} className="h-11 w-full rounded-xl sm:w-14" aria-label="Cor" />
-                  <button className="botao py-2">Salvar</button>
-                </form>
-                <form action={deleteMinistry.bind(null, m.id)} className="mt-2 text-right">
-                  <button className="text-xs font-semibold text-red-600">Excluir ministério (apaga os eventos dele)</button>
-                </form>
-              </div>
-            ))}
+            {ministries.map((m) => {
+              const leaders = m.ministry_leaders ?? [];
+              return (
+                <div key={m.id} className="rounded-2xl bg-white p-4 shadow-sm">
+                  <form action={updateMinistry.bind(null, m.id)} className="grid grid-cols-[1fr_auto_auto] gap-2">
+                    <input name="name" defaultValue={m.name} className="campo py-2" required />
+                    <input name="color" type="color" defaultValue={m.color} className="h-11 w-14 rounded-xl" aria-label="Cor" />
+                    <button className="botao py-2">Salvar</button>
+                  </form>
+
+                  <p className="mt-3 text-xs font-bold uppercase tracking-wide text-tinta/50">
+                    {leaders.length > 1 ? `Líderes (${leaders.length}) · cada uma edita os próprios eventos` : "Líder"}
+                  </p>
+                  <ul className="mt-1 flex flex-wrap gap-2">
+                    {leaders.map((l) => (
+                      <li key={l.user_id} className="flex items-center gap-2 rounded-full bg-creme py-1 pl-3 pr-1 text-sm font-semibold">
+                        {l.leader_name}
+                        <form action={removeLeader.bind(null, m.id, l.user_id)}>
+                          <button className="grid h-6 w-6 place-items-center rounded-full bg-white text-xs text-red-600" aria-label={`Remover ${l.leader_name}`}>✕</button>
+                        </form>
+                      </li>
+                    ))}
+                    {!leaders.length && <li className="text-sm text-tinta/50">Sem líder</li>}
+                  </ul>
+                  <form action={addLeader.bind(null, m.id)} className="mt-2 flex gap-2">
+                    <LeaderSelect name="user_id" exclude={leaders.map((l) => l.user_id)} empty={leaders.length ? "Adicionar outra líder..." : "Escolher líder..."} />
+                    <button className="botao-sec py-2">Adicionar</button>
+                  </form>
+
+                  <form action={deleteMinistry.bind(null, m.id)} className="mt-3 text-right">
+                    <button className="text-xs font-semibold text-red-600">Excluir ministério (apaga os eventos dele)</button>
+                  </form>
+                </div>
+              );
+            })}
           </div>
 
           <form action={createMinistry} className="mt-4 grid gap-2 rounded-2xl border-2 border-dashed border-aviva/40 p-4 sm:grid-cols-[1fr_1fr_auto_auto]">
@@ -90,7 +113,7 @@ export default async function AdminPage() {
                   <p className="truncate text-xs text-tinta/50">{p.email}</p>
                 </div>
                 <span className="shrink-0 text-xs font-bold text-aviva">
-                  {[p.role === "admin" && "Admin", p.role === "secretaria" && "Secretaria", ministries.some((m) => m.leader_id === p.id) && "Líder"].filter(Boolean).join(" · ")}
+                  {[p.role === "admin" && "Admin", p.role === "secretaria" && "Secretaria", isLeader(p.id) && "Líder"].filter(Boolean).join(" · ")}
                 </span>
               </li>
             ))}
