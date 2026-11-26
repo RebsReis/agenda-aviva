@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { addMonths, todayISO } from "@/lib/dates";
-import { ESCALAS_MINISTERIO, type Announcement, type Birthday, type Duty, type GivingInfo, type Ministry } from "@/lib/types";
+import type { Announcement, Birthday, Duty, GivingInfo } from "@/lib/types";
 
 /** Avisos ainda válidos (fixados primeiro) e escalas de um mês */
 export async function loadMural(month?: string) {
@@ -9,15 +9,14 @@ export async function loadMural(month?: string) {
   const end = addMonths(start, 1);
   const supabase = await createClient();
   const monthNum = Number(start.slice(5, 7));
-  const [{ data: a }, { data: d }, { data: mins }, { data: b }, { data: g }] = await Promise.all([
+  const [{ data: a }, { data: d }, { data: b }, { data: g }] = await Promise.all([
     supabase
       .from("announcements")
       .select("*")
       .or(`expires_on.is.null,expires_on.gte.${today}`)
       .order("pinned", { ascending: false })
       .order("created_at", { ascending: false }),
-    supabase.from("duties").select("*").gte("duty_date", start).lt("duty_date", end).order("duty_date"),
-    supabase.from("ministries").select("id, name, color").order("name"),
+    supabase.from("duties").select("*").is("ministry_id", null).gte("duty_date", start).lt("duty_date", end).order("duty_date"),
     supabase.from("birthdays").select("id, name, day, month").eq("month", monthNum).order("day").order("name"),
     supabase.from("giving_info").select("*").limit(1).maybeSingle(),
   ]);
@@ -25,12 +24,8 @@ export async function loadMural(month?: string) {
     today,
     start,
     announcements: (a ?? []) as Announcement[],
-    /** Escalas gerais da igreja (secretaria) */
-    duties: ((d ?? []) as Duty[]).filter((x) => !x.ministry_id),
-    /** Escalas dos ministérios (ex.: Mídia), agrupadas por ministério */
-    ministryDuties: ((mins ?? []) as Pick<Ministry, "id" | "name" | "color">[])
-      .map((m) => ({ ministry: m, duties: ((d ?? []) as Duty[]).filter((x) => x.ministry_id === m.id) }))
-      .filter((g) => g.duties.length || ESCALAS_MINISTERIO[g.ministry.name]),
+    /** Escalas gerais da igreja (secretaria). As escalas de ministério (Mídia) ficam no filtro do ministério. */
+    duties: (d ?? []) as Duty[],
     birthdays: (b ?? []) as Birthday[],
     giving: (g ?? null) as GivingInfo | null,
   };

@@ -4,7 +4,7 @@ import { requireSession } from "@/lib/auth";
 import { MESES, addMonths, parseDay, todayISO } from "@/lib/dates";
 import { loadMural } from "@/lib/mural";
 import DutyBoard from "@/components/DutyBoard";
-import { ESCALAS_IGREJA, ESCALAS_MINISTERIO } from "@/lib/types";
+import { ESCALAS_IGREJA } from "@/lib/types";
 import Birthdays from "@/components/Birthdays";
 import Giving from "@/components/Giving";
 import PixForm from "@/components/PixForm";
@@ -18,7 +18,7 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
   const session = await requireSession();
   const { m, pix } = await searchParams;
   const month = m && /^\d{4}-\d{2}$/.test(m) ? `${m}-01` : todayISO();
-  const { today, start, announcements, duties, ministryDuties, birthdays, giving } = await loadMural(month);
+  const { today, start, announcements, duties, birthdays, giving } = await loadMural(month);
   const podeAvisos = session.canManageAvisos;
   const podeApagarAvisos = session.canDeleteAvisos;
   const podeEscalas = session.canManageEscalas;
@@ -35,7 +35,7 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
           <h1 className="titulo text-5xl">Mural da igreja</h1>
           <p className="mt-1 text-sm font-semibold opacity-90">Avisos, escalas, aniversariantes, dízimos e ofertas.</p>
           {session.isSecretary && <p className="mt-2 inline-block rounded-lg bg-white/20 px-2 py-1 text-xs font-bold">Você cuida das escalas da igreja e dos aniversariantes</p>}
-          {!session.isAdmin && session.ledMinistries.some((x) => x.publica_avisos) && <p className="mt-2 inline-block rounded-lg bg-white/20 px-2 py-1 text-xs font-bold">Mídia: você divulga os avisos e cuida das escalas da Mídia</p>}
+          {!session.isAdmin && session.ledMinistries.some((x) => x.publica_avisos) && <p className="mt-2 inline-block rounded-lg bg-white/20 px-2 py-1 text-xs font-bold">Mídia: você divulga os avisos (as escalas da Mídia ficam no filtro Mídia da agenda)</p>}
         </div>
       </section>
 
@@ -113,32 +113,10 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
             </div>
           </div>
 
-          <h3 className="mt-3 text-sm font-extrabold uppercase tracking-wide text-tinta/50">Escalas da igreja</h3>
-          <div className="mt-2">
+          <div className="mt-3">
             <DutyBoard duties={duties} today={today} start={start} editable={podeEscalas} types={ESCALAS_IGREJA} />
           </div>
 
-          {ministryDuties.map(({ ministry, duties: list }) => {
-            const editable = session.isAdmin || session.ledMinistries.some((x) => x.id === ministry.id);
-            return (
-              <div key={ministry.id} className="mt-6">
-                <h3 className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-wide" style={{ color: ministry.color }}>
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: ministry.color }} />
-                  Escalas {ministry.name === "Mídia" ? "da" : "do"} {ministry.name}
-                </h3>
-                <div className="mt-2">
-                  <DutyBoard
-                    duties={list}
-                    today={today}
-                    start={start}
-                    editable={editable}
-                    ministryId={ministry.id}
-                    types={ESCALAS_MINISTERIO[ministry.name] ?? [...new Set(list.map((x) => x.category))]}
-                  />
-                </div>
-              </div>
-            );
-          })}
         </section>
 
         {/* ANIVERSARIANTES */}

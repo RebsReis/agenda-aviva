@@ -27,9 +27,9 @@ Aparece no topo da tela inicial, em **Todos** e no filtro **Mural da igreja** (q
 
 | Mural | Quem altera |
 |---|---|
-| Avisos | Admin e líderes da **Mídia** adicionam e editam; só a admin apaga |
+| Avisos | Admin e líderes da **Mídia** (adicionam, editam e apagam) |
 | Escalas da igreja (limpeza, recepção...) | Secretaria(o) e admin |
-| Escalas da Mídia (Som, Luzes, Fotos e Vídeos, Datashow) | Líderes da Mídia e admin |
+| Escalas da Mídia (Som, Luzes, Fotos e Vídeos, Datashow), no filtro **Mídia** da agenda (não aparecem no Mural) | Líderes da Mídia e admin |
 | Aniversariantes | Secretaria(o) e admin |
 | Dízimos e ofertas (Pix) | **Só a admin**, para evitar fraude; toda alteração fica no histórico |
 
@@ -61,6 +61,7 @@ Aparece no topo da tela inicial, em **Todos** e no filtro **Mural da igreja** (q
    - `0007_pix_2fa.sql`: alterar o Pix exige verificação em duas etapas.
    - `0008_varias_lideres.sql`: permite mais de uma líder por ministério (ex.: Mulheres).
    - `0009_midia.sql`: escalas da Mídia (Som, Luzes, Fotos e Vídeos, Datashow) e líderes da Mídia publicando avisos.
+   - `0010_midia_apaga_avisos.sql`: líderes da Mídia também apagam avisos.
 
 ### 2. Configurar o login
 Em **Authentication → Sign In / Providers**:

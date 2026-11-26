@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   DIAS_CURTOS, MESES, OFFSET, addDays, addMonths, dayLabel, dayOf, isValidDay, parseDay, rangeFor, todayISO, type View,
 } from "@/lib/dates";
-import { MURAL_MINISTRY, type EventRow, type Ministry } from "@/lib/types";
+import { ESCALAS_MINISTERIO, MURAL_MINISTRY, type Duty, type EventRow, type Ministry } from "@/lib/types";
 
 type Search = { v?: string; d?: string; m?: string };
 
@@ -46,7 +46,19 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
   const showMural = !ministryFilter || ministries.find((m) => m.id === ministryFilter)?.name === MURAL_MINISTRY;
   // Filtro de um ministério com escalas próprias (ex.: Mídia): mostra as escalas dele no topo
   const filteredName = ministries.find((m) => m.id === ministryFilter)?.name ?? "";
-  const filteredDuties = mural.ministryDuties.find((g) => g.ministry.id === ministryFilter)?.duties ?? [];
+  const dutyTypes = ESCALAS_MINISTERIO[filteredName];
+  const canEditDuties = !!ministryFilter && (session.isAdmin || session.ledMinistries.some((m) => m.id === ministryFilter));
+  const monthStart = `${day.slice(0, 7)}-01`;
+  const { data: dutyData } = ministryFilter && dutyTypes
+    ? await supabase
+        .from("duties")
+        .select("*")
+        .eq("ministry_id", ministryFilter)
+        .gte("duty_date", monthStart)
+        .lt("duty_date", addMonths(monthStart, 1))
+        .order("duty_date")
+    : { data: [] };
+  const filteredDuties = (dutyData ?? []) as Duty[];
 
   const byDay = new Map<string, EventRow[]>();
   for (const e of events) {
@@ -109,10 +121,19 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
 
       <main className="mx-auto max-w-3xl px-4 py-6">
         {showMural && <Mural {...mural} />}
-        {!showMural && filteredDuties.length > 0 && (
+        {!showMural && dutyTypes && (filteredDuties.length > 0 || canEditDuties) && (
           <section className="mb-8">
-            <h2 className="titulo mb-3 text-3xl text-aviva">Escalas {filteredName === "Mídia" ? "da" : "do"} {filteredName}</h2>
-            <DutyBoard duties={filteredDuties} today={mural.today} start={mural.start} types={[]} compact />
+            <h2 className="titulo text-3xl text-aviva">Escalas {filteredName === "Mídia" ? "da" : "do"} {filteredName}</h2>
+            <p className="mb-3 font-script text-2xl text-tinta/60">{MESES[parseDay(monthStart).getUTCMonth()].toLowerCase()}</p>
+            <DutyBoard
+              duties={filteredDuties}
+              today={today}
+              start={monthStart}
+              editable={canEditDuties}
+              ministryId={ministryFilter}
+              types={dutyTypes}
+              compact={!canEditDuties}
+            />
           </section>
         )}
         {view === "mes" && <MonthGrid day={day} byDay={byDay} today={today} link={link} />}
