@@ -35,7 +35,7 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
           <h1 className="titulo text-5xl">Mural da igreja</h1>
           <p className="mt-1 text-sm font-semibold opacity-90">Avisos, escalas, aniversariantes, dízimos e ofertas.</p>
           {session.isSecretary && <p className="mt-2 inline-block rounded-lg bg-white/20 px-2 py-1 text-xs font-bold">Você cuida das escalas da igreja e dos aniversariantes</p>}
-          {!session.isAdmin && session.ledMinistries.some((x) => x.publica_avisos) && <p className="mt-2 inline-block rounded-lg bg-white/20 px-2 py-1 text-xs font-bold">Mídia: você divulga os avisos (as escalas da Mídia ficam no filtro Mídia da agenda)</p>}
+          {!session.isAdmin && [...session.ledMinistries, ...session.teamMinistries].some((x) => x.publica_avisos) && <p className="mt-2 inline-block rounded-lg bg-white/20 px-2 py-1 text-xs font-bold">Mídia: você divulga os avisos (as escalas da Mídia ficam no filtro Mídia da agenda)</p>}
         </div>
       </section>
 

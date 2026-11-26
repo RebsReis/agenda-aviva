@@ -7,11 +7,13 @@ export type Session = {
   isAdmin: boolean;
   /** Ministérios que esta pessoa lidera */
   ledMinistries: Ministry[];
+  /** Ministérios em cuja equipe a pessoa está (ex.: equipe da Mídia) */
+  teamMinistries: Ministry[];
   canEdit: boolean;
   isSecretary: boolean;
-  /** Adicionar e editar avisos: admin e líderes de ministérios que divulgam (Mídia) */
+  /** Adicionar e editar avisos: admin, líderes e equipe dos ministérios que divulgam (Mídia) */
   canManageAvisos: boolean;
-  /** Apagar avisos: admin e líderes da Mídia */
+  /** Apagar avisos: admin, líderes e equipe da Mídia */
   canDeleteAvisos: boolean;
   /** Escalas do mural: admin ou secretaria */
   canManageEscalas: boolean;
@@ -49,6 +51,11 @@ export async function requireSession(): Promise<Session> {
     .select("ministries(*, ministry_leaders(user_id, leader_name))")
     .eq("user_id", user.id);
 
+  const { data: teams } = await supabase.from("ministry_members").select("ministries(*)").eq("user_id", user.id);
+  const teamMinistries = ((teams ?? []) as unknown as { ministries: Ministry | null }[])
+    .map((t) => t.ministries)
+    .filter((m): m is Ministry => !!m);
+
   const isAdmin = profile.role === "admin";
   const ledMinistries = ((led ?? []) as unknown as { ministries: Ministry | null }[])
     .map((l) => l.ministries)
@@ -59,10 +66,11 @@ export async function requireSession(): Promise<Session> {
     profile,
     isAdmin,
     ledMinistries,
+    teamMinistries,
     canEdit: isAdmin || ledMinistries.length > 0,
     isSecretary,
-    canManageAvisos: isAdmin || ledMinistries.some((m) => m.publica_avisos),
-    canDeleteAvisos: isAdmin || ledMinistries.some((m) => m.publica_avisos),
+    canManageAvisos: isAdmin || [...ledMinistries, ...teamMinistries].some((m) => m.publica_avisos),
+    canDeleteAvisos: isAdmin || [...ledMinistries, ...teamMinistries].some((m) => m.publica_avisos),
     canManageEscalas: isAdmin || isSecretary,
     twoFactor: aal?.currentLevel === "aal2",
     hasTwoFactor: aal?.nextLevel === "aal2",

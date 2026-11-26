@@ -4,6 +4,7 @@ import EventCard from "@/components/EventCard";
 import Mural from "@/components/Mural";
 import DutyBoard from "@/components/DutyBoard";
 import ChipRow from "@/components/ChipRow";
+import MinistryTeam from "@/components/MinistryTeam";
 import { loadMural } from "@/lib/mural";
 import { requireSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -12,7 +13,7 @@ import {
 } from "@/lib/dates";
 import { ESCALAS_MINISTERIO, MURAL_MINISTRY, type Duty, type EventRow, type Ministry } from "@/lib/types";
 
-type Search = { v?: string; d?: string; m?: string };
+type Search = { v?: string; d?: string; m?: string; equipe?: string; ok?: string };
 
 export default async function AgendaPage({ searchParams }: { searchParams: Promise<Search> }) {
   const session = await requireSession();
@@ -33,12 +34,12 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
   if (ministryFilter) query = query.eq("ministry_id", ministryFilter);
   const [{ data: eventsData }, { data: ministriesData }, mural] = await Promise.all([
     query,
-    supabase.from("ministries").select("id, name, color, ministry_leaders(user_id)").order("name"),
+    supabase.from("ministries").select("id, name, color, publica_avisos, ministry_leaders(user_id)").order("name"),
     loadMural(),
   ]);
   const events = (eventsData ?? []) as EventRow[];
   // "Mural da igreja" (cultos e eventos da igreja toda) aparece logo depois de "Todos"
-  const ministries = ((ministriesData ?? []) as Pick<Ministry, "id" | "name" | "color" | "ministry_leaders">[]).sort(
+  const ministries = ((ministriesData ?? []) as Pick<Ministry, "id" | "name" | "color" | "publica_avisos" | "ministry_leaders">[]).sort(
     (x, y) => Number(y.name === MURAL_MINISTRY) - Number(x.name === MURAL_MINISTRY),
   );
   // Ministérios com várias líderes: o cartão do evento mostra a responsável
@@ -147,6 +148,9 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
               compact={!canEditDuties}
             />
           </section>
+        )}
+        {!showMural && canEditDuties && ministries.find((m) => m.id === ministryFilter)?.publica_avisos && (
+          <MinistryTeam ministryId={ministryFilter} ministryName={filteredName} message={sp.equipe} ok={sp.ok === "1"} />
         )}
         {view === "mes" && <MonthGrid day={day} byDay={byDay} today={today} link={link} />}
 

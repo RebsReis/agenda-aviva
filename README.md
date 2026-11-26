@@ -27,7 +27,7 @@ Aparece no topo da tela inicial, em **Todos** e no filtro **Mural da igreja** (q
 
 | Mural | Quem altera |
 |---|---|
-| Avisos | Admin e líderes da **Mídia** (adicionam, editam e apagam) |
+| Avisos | Admin, líderes e **toda a equipe da Mídia** (adicionam, editam e apagam). Os líderes da Mídia montam a equipe pelo e-mail de cadastro, no filtro **Mídia** |
 | Escalas da igreja (limpeza, recepção...) | Secretaria(o) e admin |
 | Escalas da Mídia (Som, Luzes, Fotos e Vídeos, Datashow, Avisos), no filtro **Mídia** da agenda (não aparecem no Mural) | Líderes da Mídia e admin |
 | Aniversariantes | Secretaria(o) e admin |
@@ -62,6 +62,7 @@ Aparece no topo da tela inicial, em **Todos** e no filtro **Mural da igreja** (q
    - `0008_varias_lideres.sql`: permite mais de uma líder por ministério (ex.: Mulheres).
    - `0009_midia.sql`: escalas da Mídia (Som, Luzes, Fotos e Vídeos, Datashow) e líderes da Mídia publicando avisos.
    - `0010_midia_apaga_avisos.sql`: líderes da Mídia também apagam avisos.
+   - `0011_equipe_ministerio.sql`: equipe da Mídia (todos da equipe postam, editam e apagam avisos).
 
 ### 2. Configurar o login
 Em **Authentication → Sign In / Providers**:

@@ -6,7 +6,7 @@ import { addLeader, createMinistry, deleteMinistry, removeLeader, setSecretary, 
 import type { Ministry, Profile } from "@/lib/types";
 
 const ACOES: Record<string, string> = { INSERT: "criou", UPDATE: "editou", DELETE: "apagou" };
-const ENTIDADES: Record<string, string> = { events: "evento", ministries: "ministério", questions: "pergunta", announcements: "aviso", duties: "escala", secretaria: "secretaria(o)", ministry_leaders: "líder", birthdays: "aniversariante", giving_info: "dados do Pix" };
+const ENTIDADES: Record<string, string> = { events: "evento", ministries: "ministério", questions: "pergunta", announcements: "aviso", duties: "escala", secretaria: "secretaria(o)", ministry_leaders: "líder", ministry_members: "equipe", birthdays: "aniversariante", giving_info: "dados do Pix" };
 
 export default async function AdminPage() {
   const session = await requireSession();

@@ -22,7 +22,7 @@ export default function Header({ session }: { session: Session }) {
             <div className="border-b border-creme-escuro px-4 py-2 text-xs text-tinta/60">
               {session.isAdmin
                 ? "Administradora geral"
-                : [session.isSecretary && "Secretaria da igreja", session.ledMinistries.length && "Líder de ministério"].filter(Boolean).join(" · ") || "Membro"}
+                : [session.isSecretary && "Secretaria da igreja", session.ledMinistries.length && "Líder de ministério", session.teamMinistries.length && `Equipe: ${session.teamMinistries.map((m) => m.name).join(", ")}`].filter(Boolean).join(" · ") || "Membro"}
             </div>
             <Link className="block px-4 py-3 hover:bg-creme" href="/">Agenda</Link>
             <Link className="block px-4 py-3 hover:bg-creme" href="/mural">Mural da igreja</Link>
