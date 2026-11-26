@@ -9,8 +9,10 @@ export type Session = {
   ledMinistries: Ministry[];
   canEdit: boolean;
   isSecretary: boolean;
-  /** Avisos do mural: só a admin */
+  /** Adicionar e editar avisos: admin e líderes de ministérios que divulgam (Mídia) */
   canManageAvisos: boolean;
+  /** Apagar avisos: só a admin */
+  canDeleteAvisos: boolean;
   /** Escalas do mural: admin ou secretaria */
   canManageEscalas: boolean;
   /** Entrou com verificação em duas etapas nesta sessão */
@@ -59,7 +61,8 @@ export async function requireSession(): Promise<Session> {
     ledMinistries,
     canEdit: isAdmin || ledMinistries.length > 0,
     isSecretary,
-    canManageAvisos: isAdmin,
+    canManageAvisos: isAdmin || ledMinistries.some((m) => m.publica_avisos),
+    canDeleteAvisos: isAdmin,
     canManageEscalas: isAdmin || isSecretary,
     twoFactor: aal?.currentLevel === "aal2",
     hasTwoFactor: aal?.nextLevel === "aal2",

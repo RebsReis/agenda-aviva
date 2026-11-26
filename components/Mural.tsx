@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { MESES, dayLabel, parseDay } from "@/lib/dates";
-import { groupDuties } from "@/lib/mural";
+import DutyBoard from "@/components/DutyBoard";
 import Birthdays from "@/components/Birthdays";
 import Giving from "@/components/Giving";
 import type { Announcement, Birthday, Duty, GivingInfo } from "@/lib/types";
@@ -22,7 +21,6 @@ export default function Mural({
   start: string;
 }) {
   if (!announcements.length && !duties.length && !birthdays.length && !giving?.pix_key) return null;
-  const mes = MESES[parseDay(start).getUTCMonth()].toLowerCase();
 
   return (
     <section className="mb-8 space-y-4">
@@ -42,32 +40,7 @@ export default function Mural({
         <Link href="/mural" className="block text-center text-sm font-bold text-aviva">+ {announcements.length - 3} avisos</Link>
       )}
 
-      {groupDuties(duties).map(([category, list]) => {
-        const next = list.find((d) => d.duty_date >= today);
-        return (
-          <div key={category} className="rounded-2xl bg-white p-4 shadow-sm">
-            <h3 className="font-extrabold">
-              Escala de {category.toLowerCase()} <span className="font-script text-xl font-normal text-aviva">de {mes}</span>
-            </h3>
-            <ul className="mt-2 space-y-1.5">
-              {list.map((d) => {
-                const isNext = d.id === next?.id;
-                const past = d.duty_date < today;
-                return (
-                  <li
-                    key={d.id}
-                    className={`flex items-baseline gap-3 rounded-lg px-2 py-1.5 text-sm ${isNext ? "bg-creme font-bold" : ""} ${past ? "opacity-40" : ""}`}
-                  >
-                    <span className="w-28 shrink-0 text-tinta/60">{dayLabel(d.duty_date).replace(/ de [^ ]+$/, "")}</span>
-                    <span className="flex-1">{d.assignees}</span>
-                    {isNext && <span className="text-[11px] font-extrabold uppercase text-aviva">Próxima</span>}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        );
-      })}
+      <DutyBoard duties={duties} today={today} start={start} types={[]} compact />
 
       <Birthdays birthdays={birthdays} today={today} start={start} />
       <Giving giving={giving} />

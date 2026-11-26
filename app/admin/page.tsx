@@ -53,6 +53,10 @@ export default async function AdminPage() {
                     <input name="name" defaultValue={m.name} className="campo py-2" required />
                     <input name="color" type="color" defaultValue={m.color} className="h-11 w-14 rounded-xl" aria-label="Cor" />
                     <button className="botao py-2">Salvar</button>
+                    <label className="col-span-3 flex items-center gap-2 text-sm">
+                      <input type="checkbox" name="publica_avisos" defaultChecked={m.publica_avisos} className="h-5 w-5 accent-aviva" />
+                      Líderes deste ministério publicam e editam avisos gerais
+                    </label>
                   </form>
 
                   <p className="mt-3 text-xs font-bold uppercase tracking-wide text-tinta/50">

@@ -2,6 +2,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import EventCard from "@/components/EventCard";
 import Mural from "@/components/Mural";
+import DutyBoard from "@/components/DutyBoard";
 import { loadMural } from "@/lib/mural";
 import { requireSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -43,6 +44,9 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
   const multi = new Set(ministries.filter((m) => (m.ministry_leaders?.length ?? 0) > 1).map((m) => m.id));
   // O mural (avisos e escalas) aparece em "Todos" e no filtro "Mural da igreja"
   const showMural = !ministryFilter || ministries.find((m) => m.id === ministryFilter)?.name === MURAL_MINISTRY;
+  // Filtro de um ministério com escalas próprias (ex.: Mídia): mostra as escalas dele no topo
+  const filteredName = ministries.find((m) => m.id === ministryFilter)?.name ?? "";
+  const filteredDuties = mural.ministryDuties.find((g) => g.ministry.id === ministryFilter)?.duties ?? [];
 
   const byDay = new Map<string, EventRow[]>();
   for (const e of events) {
@@ -105,6 +109,12 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
 
       <main className="mx-auto max-w-3xl px-4 py-6">
         {showMural && <Mural {...mural} />}
+        {!showMural && filteredDuties.length > 0 && (
+          <section className="mb-8">
+            <h2 className="titulo mb-3 text-3xl text-aviva">Escalas {filteredName === "Mídia" ? "da" : "do"} {filteredName}</h2>
+            <DutyBoard duties={filteredDuties} today={mural.today} start={mural.start} types={[]} compact />
+          </section>
+        )}
         {view === "mes" && <MonthGrid day={day} byDay={byDay} today={today} link={link} />}
 
         {view === "ano" ? (

@@ -12,6 +12,7 @@ export type Ministry = {
   id: string;
   name: string;
   color: string;
+  publica_avisos?: boolean;
   ministry_leaders?: MinistryLeader[];
 };
 
@@ -58,6 +59,7 @@ export type Announcement = {
 
 export type Duty = {
   id: string;
+  ministry_id: string | null;
   category: string;
   duty_date: string;
   assignees: string;
@@ -79,3 +81,11 @@ export type GivingInfo = {
   message: string | null;
   updated_at: string;
 };
+
+/** Tipos de escala de cada ministério (os ministérios listados aqui ganham uma área de escalas no Mural) */
+export const ESCALAS_MINISTERIO: Record<string, string[]> = {
+  "Mídia": ["Som", "Luzes", "Fotos e Vídeos", "Datashow"],
+};
+
+/** Tipos sugeridos para as escalas gerais da igreja (secretaria) */
+export const ESCALAS_IGREJA = ["Limpeza", "Recepção", "Santa Ceia", "Cantina", "Estacionamento"];

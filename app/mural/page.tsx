@@ -1,25 +1,26 @@
 import Link from "next/link";
 import Header from "@/components/Header";
 import { requireSession } from "@/lib/auth";
-import { MESES, addMonths, dayLabel, parseDay, todayISO } from "@/lib/dates";
-import { groupDuties, loadMural } from "@/lib/mural";
+import { MESES, addMonths, parseDay, todayISO } from "@/lib/dates";
+import { loadMural } from "@/lib/mural";
+import DutyBoard from "@/components/DutyBoard";
+import { ESCALAS_IGREJA, ESCALAS_MINISTERIO } from "@/lib/types";
 import Birthdays from "@/components/Birthdays";
 import Giving from "@/components/Giving";
 import PixForm from "@/components/PixForm";
 import TwoFactorVerify from "@/components/TwoFactorVerify";
 import {
-  createAnnouncement, createBirthday, createDuty, deleteAnnouncement, deleteBirthday, deleteDuty, togglePin,
-  updateAnnouncement, updateBirthday, updateDuty, updateGiving,
+  createAnnouncement, createBirthday, deleteAnnouncement, deleteBirthday, togglePin,
+  updateAnnouncement, updateBirthday, updateGiving,
 } from "./actions";
-
-const SUGESTOES = ["Limpeza", "Recepção", "Santa Ceia", "Cantina", "Estacionamento"];
 
 export default async function MuralPage({ searchParams }: { searchParams: Promise<{ m?: string; pix?: string }> }) {
   const session = await requireSession();
   const { m, pix } = await searchParams;
   const month = m && /^\d{4}-\d{2}$/.test(m) ? `${m}-01` : todayISO();
-  const { today, start, announcements, duties, birthdays, giving } = await loadMural(month);
+  const { today, start, announcements, duties, ministryDuties, birthdays, giving } = await loadMural(month);
   const podeAvisos = session.canManageAvisos;
+  const podeApagarAvisos = session.canDeleteAvisos;
   const podeEscalas = session.canManageEscalas;
   const d0 = parseDay(start);
   const prev = addMonths(start, -1).slice(0, 7);
@@ -33,7 +34,8 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
           <p className="font-script text-2xl">fique por dentro</p>
           <h1 className="titulo text-5xl">Mural da igreja</h1>
           <p className="mt-1 text-sm font-semibold opacity-90">Avisos, escalas, aniversariantes, dízimos e ofertas.</p>
-          {session.isSecretary && <p className="mt-2 inline-block rounded-lg bg-white/20 px-2 py-1 text-xs font-bold">Você cuida das escalas e dos aniversariantes</p>}
+          {session.isSecretary && <p className="mt-2 inline-block rounded-lg bg-white/20 px-2 py-1 text-xs font-bold">Você cuida das escalas da igreja e dos aniversariantes</p>}
+          {!session.isAdmin && session.ledMinistries.some((x) => x.publica_avisos) && <p className="mt-2 inline-block rounded-lg bg-white/20 px-2 py-1 text-xs font-bold">Mídia: você divulga os avisos e cuida das escalas da Mídia</p>}
         </div>
       </section>
 
@@ -56,7 +58,7 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
                   <>
                     <div className="mt-3 flex gap-4 text-xs font-bold">
                       <form action={togglePin.bind(null, a.id, a.pinned)}><button className="underline">{a.pinned ? "Desafixar" : "Fixar no topo"}</button></form>
-                      <form action={deleteAnnouncement.bind(null, a.id)}><button className={a.pinned ? "underline" : "text-red-600 underline"}>Apagar</button></form>
+                      {podeApagarAvisos && <form action={deleteAnnouncement.bind(null, a.id)}><button className={a.pinned ? "underline" : "text-red-600 underline"}>Apagar</button></form>}
                     </div>
                     <details className="mt-3">
                       <summary className="cursor-pointer text-xs font-bold underline">Editar aviso</summary>
@@ -111,54 +113,32 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
             </div>
           </div>
 
-          <datalist id="tipos-escala">{SUGESTOES.map((s) => <option key={s} value={s} />)}</datalist>
-          <div className="mt-3 space-y-3">
-            {!duties.length && <p className="rounded-2xl bg-white p-5 text-sm text-tinta/50 shadow-sm">Nenhuma escala neste mês.</p>}
-            {groupDuties(duties).map(([category, list]) => (
-              <div key={category} className="rounded-2xl bg-white p-4 shadow-sm">
-                <h3 className="font-extrabold">Escala de {category.toLowerCase()}</h3>
-                <ul className="mt-2 divide-y divide-creme-escuro">
-                  {list.map((d) => (
-                    <li key={d.id} className={`flex flex-wrap items-start gap-x-3 gap-y-1 py-2 text-sm ${d.duty_date < today ? "opacity-40" : ""}`}>
-                      <span className="w-28 shrink-0 font-semibold text-tinta/60">{dayLabel(d.duty_date).replace(/ de [^ ]+$/, "")}</span>
-                      <span className="flex-1">
-                        <span className="font-semibold">{d.assignees}</span>
-                        {d.notes && <span className="block text-xs text-tinta/60">{d.notes}</span>}
-                      </span>
-                      {podeEscalas && (
-                        <form action={deleteDuty.bind(null, d.id)}>
-                          <button className="text-xs font-semibold text-red-600" aria-label="Remover">Remover</button>
-                        </form>
-                      )}
-                      {podeEscalas && (
-                        <details className="basis-full">
-                          <summary className="cursor-pointer text-xs font-bold text-aviva underline">Alterar</summary>
-                          <form action={updateDuty.bind(null, d.id)} className="mt-2 grid gap-2 sm:grid-cols-2">
-                            <input name="category" defaultValue={d.category} list="tipos-escala" className="campo py-2" maxLength={60} required />
-                            <input name="duty_date" type="date" defaultValue={d.duty_date} className="campo py-2" required />
-                            <input name="assignees" defaultValue={d.assignees} className="campo py-2" maxLength={300} required />
-                            <input name="notes" defaultValue={d.notes ?? ""} placeholder="Observação" className="campo py-2" maxLength={500} />
-                            <button className="botao py-2 sm:col-span-2">Salvar</button>
-                          </form>
-                        </details>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+          <h3 className="mt-3 text-sm font-extrabold uppercase tracking-wide text-tinta/50">Escalas da igreja</h3>
+          <div className="mt-2">
+            <DutyBoard duties={duties} today={today} start={start} editable={podeEscalas} types={ESCALAS_IGREJA} />
           </div>
 
-          {podeEscalas && (
-            <form action={createDuty} className="mt-4 space-y-3 rounded-2xl border-2 border-dashed border-aviva/40 p-4">
-              <p className="font-bold">Adicionar à escala</p>
-              <input name="category" list="tipos-escala" className="campo" placeholder="Tipo (ex.: Limpeza)" defaultValue="Limpeza" maxLength={60} required />
-                            <input name="duty_date" type="date" className="campo" defaultValue={start < today ? today : start} required />
-              <input name="assignees" className="campo" placeholder="Responsáveis (ex.: Família Souza e Ana)" maxLength={300} required />
-              <input name="notes" className="campo" placeholder="Observação (opcional)" maxLength={500} />
-              <button className="botao w-full">Adicionar</button>
-            </form>
-          )}
+          {ministryDuties.map(({ ministry, duties: list }) => {
+            const editable = session.isAdmin || session.ledMinistries.some((x) => x.id === ministry.id);
+            return (
+              <div key={ministry.id} className="mt-6">
+                <h3 className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-wide" style={{ color: ministry.color }}>
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: ministry.color }} />
+                  Escalas {ministry.name === "Mídia" ? "da" : "do"} {ministry.name}
+                </h3>
+                <div className="mt-2">
+                  <DutyBoard
+                    duties={list}
+                    today={today}
+                    start={start}
+                    editable={editable}
+                    ministryId={ministry.id}
+                    types={ESCALAS_MINISTERIO[ministry.name] ?? [...new Set(list.map((x) => x.category))]}
+                  />
+                </div>
+              </div>
+            );
+          })}
         </section>
 
         {/* ANIVERSARIANTES */}

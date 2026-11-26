@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-// Avisos: só a admin. Escalas: admin ou secretaria. (Regras RLS no banco.)
+// Avisos: admin e Mídia (apagar: só admin). Escalas da igreja: secretaria e admin.
+// Escalas de ministério: líderes do ministério e admin. (Regras RLS no banco.)
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -48,7 +49,9 @@ export async function createDuty(formData: FormData) {
   if (category.length < 2 || !DATE.test(date) || assignees.length < 2) return;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const ministry = String(formData.get("ministry_id") ?? "") || null;
   await supabase.from("duties").insert({
+    ministry_id: ministry,
     category,
     duty_date: date,
     assignees,

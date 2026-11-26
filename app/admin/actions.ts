@@ -25,7 +25,11 @@ export async function updateMinistry(id: string, formData: FormData) {
   const supabase = await createClient();
   await supabase
     .from("ministries")
-    .update({ name: name.length >= 2 ? name : undefined, color: color(formData.get("color")) })
+    .update({
+      name: name.length >= 2 ? name : undefined,
+      color: color(formData.get("color")),
+      publica_avisos: formData.get("publica_avisos") === "on",
+    })
     .eq("id", id);
   revalidatePath("/admin");
   revalidatePath("/");
