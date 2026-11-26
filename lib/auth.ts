@@ -9,8 +9,10 @@ export type Session = {
   ledMinistries: Ministry[];
   canEdit: boolean;
   isSecretary: boolean;
-  /** Admin ou secretaria: publica avisos e escalas */
-  canManageMural: boolean;
+  /** Avisos do mural: só a admin */
+  canManageAvisos: boolean;
+  /** Escalas do mural: admin ou secretaria */
+  canManageEscalas: boolean;
 };
 
 /**
@@ -47,6 +49,7 @@ export async function requireSession(): Promise<Session> {
     ledMinistries,
     canEdit: isAdmin || ledMinistries.length > 0,
     isSecretary,
-    canManageMural: isAdmin || isSecretary,
+    canManageAvisos: isAdmin,
+    canManageEscalas: isAdmin || isSecretary,
   };
 }

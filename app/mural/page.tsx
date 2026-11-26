@@ -3,7 +3,9 @@ import Header from "@/components/Header";
 import { requireSession } from "@/lib/auth";
 import { MESES, addMonths, dayLabel, parseDay, todayISO } from "@/lib/dates";
 import { groupDuties, loadMural } from "@/lib/mural";
-import { createAnnouncement, createDuty, deleteAnnouncement, deleteDuty, togglePin } from "./actions";
+import {
+  createAnnouncement, createDuty, deleteAnnouncement, deleteDuty, togglePin, updateAnnouncement, updateDuty,
+} from "./actions";
 
 const SUGESTOES = ["Limpeza", "Recepção", "Santa Ceia", "Cantina", "Estacionamento"];
 
@@ -12,7 +14,8 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
   const { m } = await searchParams;
   const month = m && /^\d{4}-\d{2}$/.test(m) ? `${m}-01` : todayISO();
   const { today, start, announcements, duties } = await loadMural(month);
-  const admin = session.canManageMural;
+  const podeAvisos = session.canManageAvisos;
+  const podeEscalas = session.canManageEscalas;
   const d0 = parseDay(start);
   const prev = addMonths(start, -1).slice(0, 7);
   const next = addMonths(start, 1).slice(0, 7);
@@ -25,6 +28,7 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
           <p className="font-script text-2xl">fique por dentro</p>
           <h1 className="titulo text-5xl">Mural da igreja</h1>
           <p className="mt-1 text-sm font-semibold opacity-90">Avisos gerais e escalas de serviço.</p>
+          {session.isSecretary && <p className="mt-2 inline-block rounded-lg bg-white/20 px-2 py-1 text-xs font-bold">Você cuida das escalas</p>}
         </div>
       </section>
 
@@ -43,17 +47,34 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
                   Publicado em {new Date(a.created_at).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}
                   {a.expires_on ? ` · até ${parseDay(a.expires_on).toLocaleDateString("pt-BR", { timeZone: "UTC" })}` : ""}
                 </p>
-                {admin && (
-                  <div className="mt-3 flex gap-4 text-xs font-bold">
-                    <form action={togglePin.bind(null, a.id, a.pinned)}><button className="underline">{a.pinned ? "Desafixar" : "Fixar no topo"}</button></form>
-                    <form action={deleteAnnouncement.bind(null, a.id)}><button className={a.pinned ? "underline" : "text-red-600 underline"}>Apagar</button></form>
-                  </div>
+                {podeAvisos && (
+                  <>
+                    <div className="mt-3 flex gap-4 text-xs font-bold">
+                      <form action={togglePin.bind(null, a.id, a.pinned)}><button className="underline">{a.pinned ? "Desafixar" : "Fixar no topo"}</button></form>
+                      <form action={deleteAnnouncement.bind(null, a.id)}><button className={a.pinned ? "underline" : "text-red-600 underline"}>Apagar</button></form>
+                    </div>
+                    <details className="mt-3">
+                      <summary className="cursor-pointer text-xs font-bold underline">Editar aviso</summary>
+                      <form action={updateAnnouncement.bind(null, a.id)} className="mt-3 space-y-2 text-tinta">
+                        <input name="title" defaultValue={a.title} className="campo" maxLength={120} required />
+                        <textarea name="body" defaultValue={a.body ?? ""} className="campo min-h-24" maxLength={3000} />
+                        <label className={`block text-sm font-semibold ${a.pinned ? "text-white" : ""}`}>
+                          Mostrar até (opcional)
+                          <input name="expires_on" type="date" defaultValue={a.expires_on ?? ""} className="campo mt-1" />
+                        </label>
+                        <label className="flex items-center gap-2 rounded-xl bg-creme px-3 py-3 text-sm font-semibold">
+                          <input type="checkbox" name="pinned" defaultChecked={a.pinned} className="h-5 w-5 accent-aviva" /> Destacar como importante
+                        </label>
+                        <button className={a.pinned ? "w-full rounded-xl bg-white px-5 py-3 font-bold text-aviva" : "botao w-full"}>Salvar alterações</button>
+                      </form>
+                    </details>
+                  </>
                 )}
               </article>
             ))}
           </div>
 
-          {admin && (
+          {podeAvisos && (
             <form action={createAnnouncement} className="mt-4 space-y-3 rounded-2xl border-2 border-dashed border-aviva/40 p-4">
               <p className="font-bold">Novo aviso</p>
               <input name="title" className="campo" placeholder="Título (ex.: Reunião geral de membros)" maxLength={120} required />
@@ -85,6 +106,7 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
             </div>
           </div>
 
+          <datalist id="tipos-escala">{SUGESTOES.map((s) => <option key={s} value={s} />)}</datalist>
           <div className="mt-3 space-y-3">
             {!duties.length && <p className="rounded-2xl bg-white p-5 text-sm text-tinta/50 shadow-sm">Nenhuma escala neste mês.</p>}
             {groupDuties(duties).map(([category, list]) => (
@@ -92,16 +114,28 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
                 <h3 className="font-extrabold">Escala de {category.toLowerCase()}</h3>
                 <ul className="mt-2 divide-y divide-creme-escuro">
                   {list.map((d) => (
-                    <li key={d.id} className={`flex items-start gap-3 py-2 text-sm ${d.duty_date < today ? "opacity-40" : ""}`}>
+                    <li key={d.id} className={`flex flex-wrap items-start gap-x-3 gap-y-1 py-2 text-sm ${d.duty_date < today ? "opacity-40" : ""}`}>
                       <span className="w-28 shrink-0 font-semibold text-tinta/60">{dayLabel(d.duty_date).replace(/ de [^ ]+$/, "")}</span>
                       <span className="flex-1">
                         <span className="font-semibold">{d.assignees}</span>
                         {d.notes && <span className="block text-xs text-tinta/60">{d.notes}</span>}
                       </span>
-                      {admin && (
+                      {podeEscalas && (
                         <form action={deleteDuty.bind(null, d.id)}>
                           <button className="text-xs font-semibold text-red-600" aria-label="Remover">Remover</button>
                         </form>
+                      )}
+                      {podeEscalas && (
+                        <details className="basis-full">
+                          <summary className="cursor-pointer text-xs font-bold text-aviva underline">Alterar</summary>
+                          <form action={updateDuty.bind(null, d.id)} className="mt-2 grid gap-2 sm:grid-cols-2">
+                            <input name="category" defaultValue={d.category} list="tipos-escala" className="campo py-2" maxLength={60} required />
+                            <input name="duty_date" type="date" defaultValue={d.duty_date} className="campo py-2" required />
+                            <input name="assignees" defaultValue={d.assignees} className="campo py-2" maxLength={300} required />
+                            <input name="notes" defaultValue={d.notes ?? ""} placeholder="Observação" className="campo py-2" maxLength={500} />
+                            <button className="botao py-2 sm:col-span-2">Salvar</button>
+                          </form>
+                        </details>
                       )}
                     </li>
                   ))}
@@ -110,12 +144,11 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
             ))}
           </div>
 
-          {admin && (
+          {podeEscalas && (
             <form action={createDuty} className="mt-4 space-y-3 rounded-2xl border-2 border-dashed border-aviva/40 p-4">
               <p className="font-bold">Adicionar à escala</p>
               <input name="category" list="tipos-escala" className="campo" placeholder="Tipo (ex.: Limpeza)" defaultValue="Limpeza" maxLength={60} required />
-              <datalist id="tipos-escala">{SUGESTOES.map((s) => <option key={s} value={s} />)}</datalist>
-              <input name="duty_date" type="date" className="campo" defaultValue={start < today ? today : start} required />
+                            <input name="duty_date" type="date" className="campo" defaultValue={start < today ? today : start} required />
               <input name="assignees" className="campo" placeholder="Responsáveis (ex.: Família Souza e Ana)" maxLength={300} required />
               <input name="notes" className="campo" placeholder="Observação (opcional)" maxLength={500} />
               <button className="botao w-full">Adicionar</button>

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-// Só a administração consegue gravar (regras RLS no banco).
+// Avisos: só a admin. Escalas: admin ou secretaria. (Regras RLS no banco.)
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -60,5 +60,35 @@ export async function createDuty(formData: FormData) {
 export async function deleteDuty(id: string) {
   const supabase = await createClient();
   await supabase.from("duties").delete().eq("id", id);
+  refresh();
+}
+
+export async function updateAnnouncement(id: string, formData: FormData) {
+  const title = String(formData.get("title") ?? "").trim().slice(0, 120);
+  if (title.length < 2) return;
+  const expires = String(formData.get("expires_on") ?? "");
+  const supabase = await createClient();
+  await supabase
+    .from("announcements")
+    .update({
+      title,
+      body: String(formData.get("body") ?? "").trim().slice(0, 3000) || null,
+      pinned: formData.get("pinned") === "on",
+      expires_on: DATE.test(expires) ? expires : null,
+    })
+    .eq("id", id);
+  refresh();
+}
+
+export async function updateDuty(id: string, formData: FormData) {
+  const category = String(formData.get("category") ?? "").trim().slice(0, 60);
+  const date = String(formData.get("duty_date") ?? "");
+  const assignees = String(formData.get("assignees") ?? "").trim().slice(0, 300);
+  if (category.length < 2 || !DATE.test(date) || assignees.length < 2) return;
+  const supabase = await createClient();
+  await supabase
+    .from("duties")
+    .update({ category, duty_date: date, assignees, notes: String(formData.get("notes") ?? "").trim().slice(0, 500) || null })
+    .eq("id", id);
   refresh();
 }

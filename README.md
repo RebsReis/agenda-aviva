@@ -15,9 +15,13 @@ App web (PWA) da agenda da **Comunidade Cristã Aviva**: cronograma semanal, men
 | **Secretaria(o)** (uma pessoa) | ✅ | ✅ | — | — | — |
 | **Admin geral** (uma pessoa) | ✅ | ✅ | Todos | Todos | ✅ |
 
-**Mural da igreja** (avisos e escalas): publicado pela **admin** e pela **secretaria(o)**. A admin nomeia a secretaria(o) no Painel do admin.
+**Mural da igreja:** os **avisos** são publicados e editados só pela **admin**. As **escalas** são adicionadas e alteradas pela **secretaria(o)** (e também pela admin). A admin nomeia a secretaria(o) no Painel do admin.
 
 As regras ficam **no próprio banco de dados** (Row Level Security). Mesmo que alguém tente burlar o app, o banco recusa.
+
+## Mural da igreja
+
+Aparece no topo da tela inicial, em **Todos** e no filtro **Mural da igreja** (que também mostra os cultos e eventos da igreja toda): **avisos gerais** (podem ser destacados como importantes e sumir sozinhos depois de uma data) e **escalas** do mês, como limpeza, recepção e Santa Ceia, com a próxima data destacada.
 
 ## Privacidade (LGPD)
 
@@ -39,6 +43,10 @@ As regras ficam **no próprio banco de dados** (Row Level Security). Mesmo que a
    - Guarde a senha do banco num lugar seguro.
 2. Vá em **SQL Editor**, cole todo o conteúdo de `supabase/migrations/0001_inicial.sql` e clique em **Run**.
 3. Depois, faça o mesmo com `supabase/migrations/0002_ministerios.sql`. Ele cadastra os ministérios: Jovens, Adolescentes, Mulheres, Homens, Louvor, Infantil, Mídia e **Mural da igreja** (cultos e eventos da igreja toda).
+4. Rode também, nesta ordem:
+   - `0003_mural.sql`: cria o Mural da igreja (avisos e escalas).
+   - `0004_secretaria.sql`: cria o papel de Secretaria(o) da igreja.
+   - `0005_avisos_so_admin.sql`: avisos só pela admin; escalas pela secretaria e pela admin.
 
 ### 2. Configurar o login
 Em **Authentication → Sign In / Providers**:

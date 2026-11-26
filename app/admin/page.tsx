@@ -69,7 +69,7 @@ export default async function AdminPage() {
 
         <section>
           <h2 className="titulo text-2xl">Secretaria(o) da igreja</h2>
-          <p className="text-sm text-tinta/60">Publica avisos e escalas no Mural. Não edita eventos nem vê dados de outros membros.</p>
+          <p className="text-sm text-tinta/60">Adiciona e altera as escalas do Mural (limpeza, recepção etc.). Não publica avisos, não edita eventos e não vê dados de outros membros.</p>
           <form action={setSecretary} className="mt-3 flex gap-2 rounded-2xl bg-white p-4 shadow-sm">
             <select name="user_id" defaultValue={secretary?.id ?? ""} className="campo py-2">
               <option value="">Ninguém</option>
