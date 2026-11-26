@@ -21,7 +21,14 @@ As regras ficam **no próprio banco de dados** (Row Level Security). Mesmo que a
 
 ## Mural da igreja
 
-Aparece no topo da tela inicial, em **Todos** e no filtro **Mural da igreja** (que também mostra os cultos e eventos da igreja toda): **avisos gerais** (podem ser destacados como importantes e sumir sozinhos depois de uma data) e **escalas** do mês, como limpeza, recepção e Santa Ceia, com a próxima data destacada.
+Aparece no topo da tela inicial, em **Todos** e no filtro **Mural da igreja** (que também mostra os cultos e eventos da igreja toda): **avisos gerais** (podem ser destacados como importantes e sumir sozinhos depois de uma data) e **escalas** do mês, como limpeza, recepção e Santa Ceia, com a próxima data destacada; **aniversariantes do mês** (só dia e mês, sem o ano); e **dízimos e ofertas**, com chave Pix, e-mail da igreja e botão para copiar a chave.
+
+| Mural | Quem altera |
+|---|---|
+| Avisos | Admin |
+| Escalas | Secretaria(o) e admin |
+| Aniversariantes | Secretaria(o) e admin |
+| Dízimos e ofertas (Pix) | **Só a admin**, para evitar fraude; toda alteração fica no histórico |
 
 ## Privacidade (LGPD)
 
@@ -47,6 +54,7 @@ Aparece no topo da tela inicial, em **Todos** e no filtro **Mural da igreja** (q
    - `0003_mural.sql`: cria o Mural da igreja (avisos e escalas).
    - `0004_secretaria.sql`: cria o papel de Secretaria(o) da igreja.
    - `0005_avisos_so_admin.sql`: avisos só pela admin; escalas pela secretaria e pela admin.
+   - `0006_aniversariantes_dizimos.sql`: aniversariantes do mês e dízimos e ofertas (Pix).
 
 ### 2. Configurar o login
 Em **Authentication → Sign In / Providers**:

@@ -92,3 +92,59 @@ export async function updateDuty(id: string, formData: FormData) {
     .eq("id", id);
   refresh();
 }
+
+// ---------- Aniversariantes (admin ou secretaria) ----------
+
+function readBirthday(formData: FormData) {
+  const name = String(formData.get("name") ?? "").trim().slice(0, 80);
+  const [, m, d] = String(formData.get("date") ?? "").split("-").map(Number);
+  if (name.length < 2 || !m || !d) return null;
+  return { name, day: d, month: m };
+}
+
+export async function createBirthday(formData: FormData) {
+  const data = readBirthday(formData);
+  if (!data) return;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  await supabase.from("birthdays").insert({ ...data, created_by: user?.id });
+  refresh();
+}
+
+export async function updateBirthday(id: string, formData: FormData) {
+  const data = readBirthday(formData);
+  if (!data) return;
+  const supabase = await createClient();
+  await supabase.from("birthdays").update(data).eq("id", id);
+  refresh();
+}
+
+export async function deleteBirthday(id: string) {
+  const supabase = await createClient();
+  await supabase.from("birthdays").delete().eq("id", id);
+  refresh();
+}
+
+// ---------- Dízimos e ofertas (só admin) ----------
+
+const PIX_TYPES = ["CNPJ", "E-mail", "Telefone", "Aleatória"];
+
+export async function updateGiving(id: string, formData: FormData) {
+  const text = (k: string, max: number) => String(formData.get(k) ?? "").trim().slice(0, max) || null;
+  const type = String(formData.get("pix_key_type") ?? "");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  await supabase
+    .from("giving_info")
+    .update({
+      pix_key: text("pix_key", 120),
+      pix_key_type: PIX_TYPES.includes(type) ? type : null,
+      beneficiary: text("beneficiary", 120),
+      bank: text("bank", 80),
+      email: text("email", 120),
+      message: text("message", 500),
+      updated_by: user?.id,
+    })
+    .eq("id", id);
+  refresh();
+}

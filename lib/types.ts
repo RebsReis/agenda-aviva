@@ -63,3 +63,15 @@ export type Duty = {
 
 /** Ministério dos cultos e eventos da igreja toda; o filtro dele também mostra o Mural */
 export const MURAL_MINISTRY = "Mural da igreja";
+
+export type Birthday = { id: string; name: string; day: number; month: number };
+
+export type GivingInfo = {
+  id: string;
+  pix_key: string | null;
+  pix_key_type: string | null;
+  beneficiary: string | null;
+  bank: string | null;
+  email: string | null;
+  message: string | null;
+};

@@ -3,8 +3,11 @@ import Header from "@/components/Header";
 import { requireSession } from "@/lib/auth";
 import { MESES, addMonths, dayLabel, parseDay, todayISO } from "@/lib/dates";
 import { groupDuties, loadMural } from "@/lib/mural";
+import Birthdays from "@/components/Birthdays";
+import Giving from "@/components/Giving";
 import {
-  createAnnouncement, createDuty, deleteAnnouncement, deleteDuty, togglePin, updateAnnouncement, updateDuty,
+  createAnnouncement, createBirthday, createDuty, deleteAnnouncement, deleteBirthday, deleteDuty, togglePin,
+  updateAnnouncement, updateBirthday, updateDuty, updateGiving,
 } from "./actions";
 
 const SUGESTOES = ["Limpeza", "Recepção", "Santa Ceia", "Cantina", "Estacionamento"];
@@ -13,7 +16,7 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
   const session = await requireSession();
   const { m } = await searchParams;
   const month = m && /^\d{4}-\d{2}$/.test(m) ? `${m}-01` : todayISO();
-  const { today, start, announcements, duties } = await loadMural(month);
+  const { today, start, announcements, duties, birthdays, giving } = await loadMural(month);
   const podeAvisos = session.canManageAvisos;
   const podeEscalas = session.canManageEscalas;
   const d0 = parseDay(start);
@@ -27,8 +30,8 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
         <div className="mx-auto max-w-3xl px-4">
           <p className="font-script text-2xl">fique por dentro</p>
           <h1 className="titulo text-5xl">Mural da igreja</h1>
-          <p className="mt-1 text-sm font-semibold opacity-90">Avisos gerais e escalas de serviço.</p>
-          {session.isSecretary && <p className="mt-2 inline-block rounded-lg bg-white/20 px-2 py-1 text-xs font-bold">Você cuida das escalas</p>}
+          <p className="mt-1 text-sm font-semibold opacity-90">Avisos, escalas, aniversariantes, dízimos e ofertas.</p>
+          {session.isSecretary && <p className="mt-2 inline-block rounded-lg bg-white/20 px-2 py-1 text-xs font-bold">Você cuida das escalas e dos aniversariantes</p>}
         </div>
       </section>
 
@@ -153,6 +156,84 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
               <input name="notes" className="campo" placeholder="Observação (opcional)" maxLength={500} />
               <button className="botao w-full">Adicionar</button>
             </form>
+          )}
+        </section>
+
+        {/* ANIVERSARIANTES */}
+        <section>
+          <h2 className="titulo text-3xl text-aviva">Aniversariantes</h2>
+          <p className="font-script text-2xl text-tinta/60">{MESES[d0.getUTCMonth()].toLowerCase()}</p>
+          <div className="mt-3">
+            {birthdays.length ? (
+              <Birthdays birthdays={birthdays} today={today} start={start} />
+            ) : (
+              <p className="rounded-2xl bg-white p-5 text-sm text-tinta/50 shadow-sm">Nenhum aniversariante cadastrado neste mês.</p>
+            )}
+          </div>
+
+          {podeEscalas && birthdays.length > 0 && (
+            <ul className="mt-3 divide-y divide-creme-escuro rounded-2xl bg-white px-4 shadow-sm">
+              {birthdays.map((b) => (
+                <li key={b.id} className="py-2 text-sm">
+                  <details>
+                    <summary className="flex cursor-pointer items-center justify-between gap-2">
+                      <span><b>{String(b.day).padStart(2, "0")}/{String(b.month).padStart(2, "0")}</b> · {b.name}</span>
+                      <span className="text-xs font-bold text-aviva underline">Alterar</span>
+                    </summary>
+                    <form action={updateBirthday.bind(null, b.id)} className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+                      <input name="name" defaultValue={b.name} className="campo py-2" maxLength={80} required />
+                      <input name="date" type="date" defaultValue={`2000-${String(b.month).padStart(2, "0")}-${String(b.day).padStart(2, "0")}`} className="campo py-2" required />
+                      <button className="botao py-2">Salvar</button>
+                    </form>
+                    <form action={deleteBirthday.bind(null, b.id)} className="mt-1 text-right">
+                      <button className="text-xs font-semibold text-red-600">Remover</button>
+                    </form>
+                  </details>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {podeEscalas && (
+            <form action={createBirthday} className="mt-4 space-y-3 rounded-2xl border-2 border-dashed border-aviva/40 p-4">
+              <p className="font-bold">Adicionar aniversariante</p>
+              <input name="name" className="campo" placeholder="Nome (ex.: Maria Souza)" maxLength={80} required />
+              <label className="block text-sm font-semibold">
+                Data de aniversário <span className="font-normal text-tinta/50">(o ano não é guardado nem exibido)</span>
+                <input name="date" type="date" className="campo mt-1" required />
+              </label>
+              <p className="text-xs text-tinta/60">Cadastre só quem autorizou aparecer no mural.</p>
+              <button className="botao w-full">Adicionar</button>
+            </form>
+          )}
+        </section>
+
+        {/* DÍZIMOS E OFERTAS */}
+        <section>
+          <h2 className="titulo text-3xl text-aviva">Dízimos e ofertas</h2>
+          <div className="mt-3">
+            {giving?.pix_key ? <Giving giving={giving} /> : (
+              <p className="rounded-2xl bg-white p-5 text-sm text-tinta/50 shadow-sm">Os dados para contribuição serão publicados em breve.</p>
+            )}
+          </div>
+          {podeAvisos && giving && (
+            <details className="mt-4 rounded-2xl border-2 border-dashed border-aviva/40 p-4">
+              <summary className="cursor-pointer font-bold">Alterar dados do Pix</summary>
+              <form action={updateGiving.bind(null, giving.id)} className="mt-3 space-y-3">
+                <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+                  <input name="pix_key" defaultValue={giving.pix_key ?? ""} className="campo" placeholder="Chave Pix" maxLength={120} />
+                  <select name="pix_key_type" defaultValue={giving.pix_key_type ?? "CNPJ"} className="campo">
+                    {["CNPJ", "E-mail", "Telefone", "Aleatória"].map((t) => <option key={t}>{t}</option>)}
+                  </select>
+                </div>
+                <input name="beneficiary" defaultValue={giving.beneficiary ?? ""} className="campo" placeholder="Favorecido (ex.: Comunidade Cristã Aviva)" maxLength={120} />
+                <input name="bank" defaultValue={giving.bank ?? ""} className="campo" placeholder="Banco (opcional)" maxLength={80} />
+                <input name="email" type="email" defaultValue={giving.email ?? ""} className="campo" placeholder="E-mail da igreja" maxLength={120} />
+                <textarea name="message" defaultValue={giving.message ?? ""} className="campo min-h-20" placeholder="Mensagem (opcional)" maxLength={500} />
+                <p className="text-xs text-tinta/60">Só a admin pode alterar estes dados. Toda alteração fica registrada no histórico.</p>
+                <button className="botao w-full">Salvar dados do Pix</button>
+              </form>
+            </details>
           )}
         </section>
       </main>

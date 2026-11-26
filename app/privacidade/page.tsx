@@ -39,7 +39,11 @@ export default function PrivacidadePage() {
             <li><b>Perguntas</b> que você escrever nos eventos.</li>
             <li>Registros técnicos de acesso (data e hora de login), para segurança.</li>
           </ul>
-          <p className="mt-2">Não coletamos telefone, CPF, endereço, data de nascimento, fotos ou localização.</p>
+          <p className="mt-2">Não coletamos telefone, CPF, endereço, ano de nascimento, fotos ou localização.</p>
+          <p className="mt-2">
+            <b>Aniversariantes:</b> a secretaria da igreja pode publicar no mural o nome e o <b>dia e mês</b> do aniversário (nunca o ano) de quem autorizar.
+            Para retirar seu nome, peça à secretaria ou escreva para o e-mail de contato abaixo.
+          </p>
         </section>
 
         <section>

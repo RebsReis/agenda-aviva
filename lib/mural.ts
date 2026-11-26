@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { addMonths, todayISO } from "@/lib/dates";
-import type { Announcement, Duty } from "@/lib/types";
+import type { Announcement, Birthday, Duty, GivingInfo } from "@/lib/types";
 
 /** Avisos ainda válidos (fixados primeiro) e escalas de um mês */
 export async function loadMural(month?: string) {
@@ -8,7 +8,8 @@ export async function loadMural(month?: string) {
   const start = `${(month ?? today).slice(0, 7)}-01`;
   const end = addMonths(start, 1);
   const supabase = await createClient();
-  const [{ data: a }, { data: d }] = await Promise.all([
+  const monthNum = Number(start.slice(5, 7));
+  const [{ data: a }, { data: d }, { data: b }, { data: g }] = await Promise.all([
     supabase
       .from("announcements")
       .select("*")
@@ -16,8 +17,17 @@ export async function loadMural(month?: string) {
       .order("pinned", { ascending: false })
       .order("created_at", { ascending: false }),
     supabase.from("duties").select("*").gte("duty_date", start).lt("duty_date", end).order("duty_date"),
+    supabase.from("birthdays").select("id, name, day, month").eq("month", monthNum).order("day").order("name"),
+    supabase.from("giving_info").select("*").limit(1).maybeSingle(),
   ]);
-  return { today, start, announcements: (a ?? []) as Announcement[], duties: (d ?? []) as Duty[] };
+  return {
+    today,
+    start,
+    announcements: (a ?? []) as Announcement[],
+    duties: (d ?? []) as Duty[],
+    birthdays: (b ?? []) as Birthday[],
+    giving: (g ?? null) as GivingInfo | null,
+  };
 }
 
 /** Agrupa as escalas por tipo (Limpeza, Recepção...) */

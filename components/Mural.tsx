@@ -1,21 +1,27 @@
 import Link from "next/link";
 import { MESES, dayLabel, parseDay } from "@/lib/dates";
 import { groupDuties } from "@/lib/mural";
-import type { Announcement, Duty } from "@/lib/types";
+import Birthdays from "@/components/Birthdays";
+import Giving from "@/components/Giving";
+import type { Announcement, Birthday, Duty, GivingInfo } from "@/lib/types";
 
 /** Bloco do mural que aparece no topo da tela inicial, para todos */
 export default function Mural({
   announcements,
   duties,
+  birthdays,
+  giving,
   today,
   start,
 }: {
   announcements: Announcement[];
   duties: Duty[];
+  birthdays: Birthday[];
+  giving: GivingInfo | null;
   today: string;
   start: string;
 }) {
-  if (!announcements.length && !duties.length) return null;
+  if (!announcements.length && !duties.length && !birthdays.length && !giving?.pix_key) return null;
   const mes = MESES[parseDay(start).getUTCMonth()].toLowerCase();
 
   return (
@@ -62,6 +68,9 @@ export default function Mural({
           </div>
         );
       })}
+
+      <Birthdays birthdays={birthdays} today={today} start={start} />
+      <Giving giving={giving} />
     </section>
   );
 }
