@@ -12,7 +12,7 @@ export default async function MuralPage({ searchParams }: { searchParams: Promis
   const { m } = await searchParams;
   const month = m && /^\d{4}-\d{2}$/.test(m) ? `${m}-01` : todayISO();
   const { today, start, announcements, duties } = await loadMural(month);
-  const admin = session.isAdmin;
+  const admin = session.canManageMural;
   const d0 = parseDay(start);
   const prev = addMonths(start, -1).slice(0, 7);
   const next = addMonths(start, 1).slice(0, 7);

@@ -20,7 +20,9 @@ export default function Header({ session }: { session: Session }) {
           </summary>
           <nav className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl bg-white text-tinta shadow-xl">
             <div className="border-b border-creme-escuro px-4 py-2 text-xs text-tinta/60">
-              {session.isAdmin ? "Administradora geral" : session.ledMinistries.length ? "Líder de ministério" : "Membro"}
+              {session.isAdmin
+                ? "Administradora geral"
+                : [session.isSecretary && "Secretaria da igreja", session.ledMinistries.length && "Líder de ministério"].filter(Boolean).join(" · ") || "Membro"}
             </div>
             <Link className="block px-4 py-3 hover:bg-creme" href="/">Agenda</Link>
             <Link className="block px-4 py-3 hover:bg-creme" href="/mural">Mural da igreja</Link>

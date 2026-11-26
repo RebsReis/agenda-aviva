@@ -12,7 +12,10 @@ App web (PWA) da agenda da **Comunidade Cristã Aviva**: cronograma semanal, men
 |---|---|---|---|---|---|
 | **Membro** | ✅ | ✅ | — | — | — |
 | **Líder** | ✅ | ✅ | Só do próprio ministério | Só nos eventos do próprio ministério | — |
+| **Secretaria(o)** (uma pessoa) | ✅ | ✅ | — | — | — |
 | **Admin geral** (uma pessoa) | ✅ | ✅ | Todos | Todos | ✅ |
+
+**Mural da igreja** (avisos e escalas): publicado pela **admin** e pela **secretaria(o)**. A admin nomeia a secretaria(o) no Painel do admin.
 
 As regras ficam **no próprio banco de dados** (Row Level Security). Mesmo que alguém tente burlar o app, o banco recusa.
 

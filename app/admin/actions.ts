@@ -37,3 +37,10 @@ export async function deleteMinistry(id: string) {
   revalidatePath("/admin");
   revalidatePath("/");
 }
+
+export async function setSecretary(formData: FormData) {
+  const id = String(formData.get("user_id") ?? "") || null;
+  const supabase = await createClient();
+  await supabase.rpc("set_secretary", { p_user: id });
+  revalidatePath("/admin");
+}

@@ -2,7 +2,7 @@ export type Profile = {
   id: string;
   full_name: string;
   email: string;
-  role: "membro" | "admin";
+  role: "membro" | "admin" | "secretaria";
   consent_at: string | null;
   consent_version: string | null;
   created_at: string;

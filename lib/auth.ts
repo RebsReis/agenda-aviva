@@ -8,6 +8,9 @@ export type Session = {
   /** Ministérios que esta pessoa lidera */
   ledMinistries: Ministry[];
   canEdit: boolean;
+  isSecretary: boolean;
+  /** Admin ou secretaria: publica avisos e escalas */
+  canManageMural: boolean;
 };
 
 /**
@@ -37,5 +40,13 @@ export async function requireSession(): Promise<Session> {
 
   const isAdmin = profile.role === "admin";
   const ledMinistries = (led ?? []) as Ministry[];
-  return { profile, isAdmin, ledMinistries, canEdit: isAdmin || ledMinistries.length > 0 };
+  const isSecretary = profile.role === "secretaria";
+  return {
+    profile,
+    isAdmin,
+    ledMinistries,
+    canEdit: isAdmin || ledMinistries.length > 0,
+    isSecretary,
+    canManageMural: isAdmin || isSecretary,
+  };
 }

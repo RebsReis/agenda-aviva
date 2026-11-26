@@ -2,11 +2,11 @@ import { redirect } from "next/navigation";
 import Header from "@/components/Header";
 import { requireSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { createMinistry, deleteMinistry, updateMinistry } from "./actions";
+import { createMinistry, deleteMinistry, setSecretary, updateMinistry } from "./actions";
 import type { Ministry, Profile } from "@/lib/types";
 
 const ACOES: Record<string, string> = { INSERT: "criou", UPDATE: "editou", DELETE: "apagou" };
-const ENTIDADES: Record<string, string> = { events: "evento", ministries: "ministério", questions: "pergunta", announcements: "aviso", duties: "escala" };
+const ENTIDADES: Record<string, string> = { events: "evento", ministries: "ministério", questions: "pergunta", announcements: "aviso", duties: "escala", secretaria: "secretaria(o)" };
 
 export default async function AdminPage() {
   const session = await requireSession();
@@ -21,6 +21,7 @@ export default async function AdminPage() {
   const ministries = (mins ?? []) as Ministry[];
   const profiles = (people ?? []) as Profile[];
   const nameOf = new Map(profiles.map((p) => [p.id, p.full_name]));
+  const secretary = profiles.find((p) => p.role === "secretaria");
 
   const LeaderSelect = ({ value }: { value?: string | null }) => (
     <select name="leader_id" defaultValue={value ?? ""} className="campo py-2">
@@ -67,6 +68,18 @@ export default async function AdminPage() {
         </section>
 
         <section>
+          <h2 className="titulo text-2xl">Secretaria(o) da igreja</h2>
+          <p className="text-sm text-tinta/60">Publica avisos e escalas no Mural. Não edita eventos nem vê dados de outros membros.</p>
+          <form action={setSecretary} className="mt-3 flex gap-2 rounded-2xl bg-white p-4 shadow-sm">
+            <select name="user_id" defaultValue={secretary?.id ?? ""} className="campo py-2">
+              <option value="">Ninguém</option>
+              {profiles.filter((p) => p.role !== "admin").map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
+            </select>
+            <button className="botao py-2">Salvar</button>
+          </form>
+        </section>
+
+        <section>
           <h2 className="titulo text-2xl">Pessoas cadastradas ({profiles.length})</h2>
           <p className="text-sm text-tinta/60">Visível só para você. Use apenas para administrar a agenda.</p>
           <ul className="mt-3 divide-y divide-creme-escuro overflow-hidden rounded-2xl bg-white shadow-sm">
@@ -77,7 +90,7 @@ export default async function AdminPage() {
                   <p className="truncate text-xs text-tinta/50">{p.email}</p>
                 </div>
                 <span className="shrink-0 text-xs font-bold text-aviva">
-                  {p.role === "admin" ? "Admin" : ministries.some((m) => m.leader_id === p.id) ? "Líder" : ""}
+                  {[p.role === "admin" && "Admin", p.role === "secretaria" && "Secretaria", ministries.some((m) => m.leader_id === p.id) && "Líder"].filter(Boolean).join(" · ")}
                 </span>
               </li>
             ))}
