@@ -3,6 +3,13 @@ import { groupDuties } from "@/lib/mural";
 import { createDuty, deleteDuty, updateDuty } from "@/app/mural/actions";
 import type { Duty } from "@/lib/types";
 
+/** "Escala do som", "Escala das luzes", "Escala de limpeza"... */
+function tituloEscala(category: string) {
+  const c = category.toLowerCase();
+  const artigo: Record<string, string> = { som: "do", datashow: "do", luzes: "das" };
+  return `Escala ${artigo[c] ?? "de"} ${c}`;
+}
+
 /**
  * Quadro de escalas (da igreja ou de um ministério), com edição para quem pode.
  * Sem "editable", é só leitura.
@@ -34,7 +41,7 @@ export default function DutyBoard({
         const next = list.find((d) => d.duty_date >= today);
         return (
           <div key={category} className="rounded-2xl bg-white p-4 shadow-sm">
-            <h3 className="font-extrabold">Escala {/^(som|luzes|datashow)$/i.test(category) ? "do " : "de "}{category.toLowerCase()}</h3>
+            <h3 className="font-extrabold">{tituloEscala(category)}</h3>
             <ul className="mt-2 divide-y divide-creme-escuro">
               {list.map((d) => (
                 <li
