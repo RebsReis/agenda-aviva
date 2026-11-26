@@ -35,6 +35,7 @@ As regras ficam **no próprio banco de dados** (Row Level Security). Mesmo que a
    - **Region:** `South America (São Paulo)`.
    - Guarde a senha do banco num lugar seguro.
 2. Vá em **SQL Editor**, cole todo o conteúdo de `supabase/migrations/0001_inicial.sql` e clique em **Run**.
+3. Depois, faça o mesmo com `supabase/migrations/0002_ministerios.sql`. Ele cadastra os ministérios: Jovens, Adolescentes, Mulheres, Homens, Louvor, Infantil, Mídia e Geral (para os cultos).
 
 ### 2. Configurar o login
 Em **Authentication → Sign In / Providers**:
@@ -65,7 +66,7 @@ Recomendado: em **Authentication → Attack Protection**, ative a proteção con
    ```sql
    update public.profiles set role = 'admin' where email = 'SEU-EMAIL@exemplo.com';
    ```
-3. Entre no app → menu → **Painel do admin** → cadastre os ministérios e escolha o líder de cada um.
+3. Entre no app → menu → **Painel do admin** → escolha o líder de cada ministério (e adicione outros, se precisar).
 
 ### 5. Antes de divulgar
 - Em `app/privacidade/page.tsx`, preencha o **CNPJ** e o **e-mail de contato** (procure por `PREENCHER`).
