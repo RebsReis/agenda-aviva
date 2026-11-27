@@ -6,6 +6,10 @@ App web (PWA) da agenda da **Comunidade Cristã Aviva**: cronograma semanal, men
 
 ---
 
+## Protótipo
+
+A pasta `prototipo/` tem uma versão de demonstração (uma página só, com dados de exemplo e sem banco de dados) para apresentar o app antes de publicar. Para publicar na Vercel: **Add New → Project**, importe este repositório e, em **Root Directory**, escolha `prototipo`.
+
 ## Quem pode o quê
 
 | Papel | Vê a agenda | Pergunta | Cria/edita eventos | Responde perguntas | Ministérios e líderes |
