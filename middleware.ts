@@ -1,3 +1,4 @@
+import { SUPABASE_KEY, SUPABASE_READY, SUPABASE_URL } from "@/lib/supabase/env";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -5,11 +6,18 @@ import { NextResponse, type NextRequest } from "next/server";
 const PUBLIC_PATHS = ["/login", "/cadastro", "/recuperar-senha", "/auth", "/privacidade"];
 
 export async function middleware(request: NextRequest) {
+  // Sem as chaves do Supabase configuradas, mostra um aviso em vez de quebrar
+  if (!SUPABASE_READY) {
+    return new NextResponse(
+      "<!doctype html><meta charset=utf-8><title>Agenda Aviva</title><body style='font-family:sans-serif;padding:32px'><h1>Agenda Aviva</h1><p>O app ainda está sendo configurado (faltam as chaves do Supabase na Vercel).</p></body>",
+      { status: 503, headers: { "content-type": "text/html; charset=utf-8" } },
+    );
+  }
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    SUPABASE_URL,
+    SUPABASE_KEY,
     {
       cookies: {
         getAll() {
