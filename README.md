@@ -55,7 +55,8 @@ Aparece no topo da tela inicial, em **Todos** e no filtro **Mural da igreja** (q
 1. Crie uma conta em [supabase.com](https://supabase.com) e um projeto novo.
    - **Region:** `South America (São Paulo)`.
    - Guarde a senha do banco num lugar seguro.
-2. Vá em **SQL Editor**, cole todo o conteúdo de `supabase/migrations/0001_inicial.sql` e clique em **Run**.
+2. Vá em **SQL Editor** → **New query**, cole **todo** o conteúdo de `supabase/instalar.sql` (já junta os arquivos 0001 a 0011, em ordem) e clique em **Run**. Rode uma vez só.
+   - Ou, se preferir, rode os arquivos de `supabase/migrations/` um por um, na ordem:
 3. Depois, faça o mesmo com `supabase/migrations/0002_ministerios.sql`. Ele cadastra os ministérios: Jovens, Adolescentes, Mulheres, Homens, Louvor, Infantil, Mídia e **Mural da igreja** (cultos e eventos da igreja toda).
 4. Rode também, nesta ordem:
    - `0003_mural.sql`: cria o Mural da igreja (avisos e escalas).
@@ -97,7 +98,10 @@ Recomendado: em **Authentication → Attack Protection**, ative a proteção con
 1. Abra o app publicado e crie sua conta.
 2. No Supabase → **SQL Editor**, rode:
    ```sql
-   update public.profiles set role = 'admin' where email = 'SEU-EMAIL@exemplo.com';
+   update public.profiles set role = 'admin' where lower(email) = lower('SEU-EMAIL@exemplo.com');
+   ```
+   (o mesmo comando está em `supabase/tornar-admin.sql`)
+   ```sql
    ```
 3. Entre no app → menu → **Painel do admin** → escolha a líder de cada ministério. No Mulheres, adicione todas as líderes.
 
